@@ -47,6 +47,7 @@ body { font-family: var(--text); overflow: hidden; -webkit-font-smoothing: antia
   font: inherit; color: inherit;
 }
 .explore:focus-visible { outline: 2px solid var(--cyan); outline-offset: .5cqw; }
+.js .stage:not([data-state="rest"]) .explore:focus-visible { outline: none; }  /* the button is hidden under the menu: no ring around the menu (Javed, 2026-11-02) */
 .explore-label {
   display: block; font-family: var(--display); font-weight: 600; text-transform: uppercase;
   font-size: max(11px, 1.02cqw); letter-spacing: .17em; padding-left: .17em;

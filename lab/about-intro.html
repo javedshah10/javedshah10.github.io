@@ -102,7 +102,7 @@
   const plate = (name, cls = '') => {
     const img = document.createElement('img');
     img.alt = ''; img.className = cls; img.sizes = 'min(138vw, 1800px)';  // the glass width x 1.5, because plates zoom up to 160% (quality first, Javed)
-    img.srcset = `../media/about-intro/${name}-1200.webp 1200w, ../media/about-intro/${name}-2400.webp 2400w`;
+    img.src = `../media/about-intro/${name}.webp`;
     return $('plates').appendChild(img);
   };
   const P = { A: plate('plate-A'), R: plate('ripple-hook-still'), B: plate('plate-B'), Cl: plate('plate-C', 'half-l'), Cr: plate('plate-C', 'half-r'),

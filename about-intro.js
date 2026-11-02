@@ -48,8 +48,9 @@ window.AboutIntro = (() => {
       const img = new Image();
       img.alt = ''; img.decoding = 'async';
       img.className = k === 'Cl' ? 'ai-half-l' : k === 'Cr' ? 'ai-half-r' : '';
-      img.sizes = 'min(138vw, 1800px)';  // the glass width x 1.5: plates zoom up to 160% (quality first, Javed)
-      img.srcset = `${BASE}${name}-1200.webp 1200w, ${BASE}${name}-2400.webp 2400w`;
+      // One file per plate at Gemini's own resolution (1376 px), encoded at high quality: the earlier 80 KB versions showed
+      // compression patches when zoomed (Javed, 2026-11-02), and enlarged 2400 px copies added bytes but no detail.
+      img.src = `${BASE}${name}.webp`;
       P[k] = el.plates.appendChild(img);
     });
     // Ready = every plate downloaded and decoded, so nothing pops in or stutters on first paint.

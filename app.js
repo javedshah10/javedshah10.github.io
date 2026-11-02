@@ -178,7 +178,7 @@
     const size = innerWidth < 768 ? 'mobile' : 'desktop';
     jvf.src = `media/jv-forward-${size}.mp4?v=2`; jvr.src = `media/jv-reverse-${size}.mp4?v=2`;
     [jvf, jvr].forEach((v) => { v.preload = 'auto'; v.load(); });
-    jvHold.src = 'media/jv-end.webp';
+    jvHold.src = 'media/jv-end.webp?v=2';  // v2: high-quality encode from jv-end.png (v1 at 63 KB showed patches, Javed 2026-11-02)
     loadSound('jv');
   }
   function playJV(v, t, done, maxMs) {
