@@ -91,6 +91,7 @@
     if (state === 'intro' || state === 'rest' || state === 'closing' || state === 'panel' || state === 'jv') return;
     const t = ++token;
     sfx('close');
+    if (state === 'opening' && stage.dataset.show !== 'fwd') { stopVideos(); toRest(t, 'css'); return; }  // opening clip never painted: the capsule is still on screen
     const midway = state === 'opening' && playing === fwd;
     if (allowVideo() && ready(rev)) {
       setState('closing');

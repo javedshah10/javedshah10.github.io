@@ -91,9 +91,10 @@ body { font-family: var(--text); overflow: hidden; -webkit-font-smoothing: antia
 .js .still { transition: opacity .22s ease, transform .26s var(--ease-out); }
 .js .stage[data-via="video"] .still { transition: none; }  /* the clip already showed the motion */
 .js .still-b { opacity: 0; transform: scale(.82, .6); }
-.js .stage[data-state="menu"] .still-a, .js .stage[data-state="panel"] .still-a { opacity: 0; transform: scale(.9, 1.4); }
+/* closing keeps the menu look until the reverse clip's first frame covers it (phones decode late: the capsule showed first) */
+.js .stage[data-state="menu"] .still-a, .js .stage[data-state="closing"] .still-a, .js .stage[data-state="panel"] .still-a { opacity: 0; transform: scale(.9, 1.4); }
 .js .stage[data-state="intro"] .still-a { opacity: 0; }  /* the intro clip ends exactly on this still */
-.js .stage[data-state="menu"] .still-b, .js .stage[data-state="panel"] .still-b { opacity: 1; transform: none; }
+.js .stage[data-state="menu"] .still-b, .js .stage[data-state="closing"] .still-b, .js .stage[data-state="panel"] .still-b { opacity: 1; transform: none; }
 .js .stage:not([data-state="rest"]) .explore { pointer-events: none; }
 .js .stage:not([data-state="rest"]) .explore-label { opacity: 0; }
 .js .menu { visibility: hidden; }
