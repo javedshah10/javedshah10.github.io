@@ -262,6 +262,8 @@ html:not(.js) .still-a, html:not(.js) .explore { display: none; }
 .card h3 { margin: .3em 0 .4em !important; color: #fff !important; letter-spacing: .1em !important; }
 .card p:last-child { margin: 0; font-size: .92em; }
 .card .meta { margin: 0; }
+.chips { list-style: none; padding: 0 !important; display: flex; flex-wrap: wrap; gap: .5em; }
+.chips li { margin: 0; padding: .3em .85em; border-radius: 999px; font-size: .85em; color: #CFE8F7; border: 1px solid rgba(56, 189, 248, .35); background: rgba(56, 189, 248, .08); }
 .contact-list { list-style: none; padding: 0 !important; }
 .contact-list li { display: flex; gap: 1.2em; align-items: baseline; padding: .7em 0; border-bottom: 1px solid rgba(56, 189, 248, .15); }
 .contact-list .meta { min-width: 7em; }
