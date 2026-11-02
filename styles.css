@@ -147,8 +147,8 @@ html:not(.js) .still-a, html:not(.js) .explore { display: none; }
    symmetric glass overlay on top of it. The overlay sits just inside the rim's bright inner edge (measured by
    make-stills.py) with the same corner on all four sides, and draws its own dark bevel and top channel, so the
    render's uneven inner bevel is fully covered. */
+.glass, .ai-root { position: absolute; left: 5.89%; right: 6.013%; top: 6.094%; bottom: 18.48%; border-radius: 10.704cqw; }  /* the About Me intro layer shares this box */
 .glass {
-  position: absolute; left: 5.89%; right: 6.013%; top: 6.094%; bottom: 18.48%; border-radius: 10.704cqw;
   overflow: hidden; z-index: 2;
   box-shadow: inset 0 0 0 .22cqw #020409, inset 0 0 1.3cqw .45cqw rgba(0, 0, 0, .78), inset 0 0 0 .32cqw rgba(150, 180, 220, .07);
   background:
@@ -210,7 +210,7 @@ html:not(.js) .still-a, html:not(.js) .explore { display: none; }
   border: 1px solid rgba(56, 189, 248, .5); background: rgba(8, 12, 20, .55); color: var(--ice);
   font-size: max(14px, 1.3cqw); transition: box-shadow .2s, color .2s, border-color .2s;
 }
-.panel-close:hover, .panel-close:focus-visible { outline: none; color: #fff; border-color: var(--cyan); box-shadow: 0 0 1em rgba(56, 189, 248, .6), inset 0 0 .6em rgba(56, 189, 248, .35); }
+.panel-close:hover, .panel-close:focus-visible, .replay-intro:hover, .replay-intro:focus-visible { outline: none; color: #fff; border-color: var(--cyan); box-shadow: 0 0 1em rgba(56, 189, 248, .6), inset 0 0 .6em rgba(56, 189, 248, .35); }
 
 /* Phones and tall windows: the wide rendered panel would be tiny, so draw a tall titanium panel in CSS.
    Here CSS owns the panel shadow (the image is not used), so there is still one shadow owner. */
@@ -234,7 +234,8 @@ html:not(.js) .still-a, html:not(.js) .explore { display: none; }
   .notch-r { left: auto; right: -9px; }
   .panel-frame::after { right: -7px; }
   .frame { display: none; }
-  .glass { inset: 0; border-radius: 21px; box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .75), inset 0 6px 16px rgba(0, 0, 0, .7); }
+  .glass, .ai-root { inset: 0; border-radius: 21px; }
+  .glass { box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .75), inset 0 6px 16px rgba(0, 0, 0, .7); }
   .glass::after { left: 7%; right: 7%; top: 8px; height: 4px; box-shadow: 0 1px 0 rgba(170, 200, 240, .3), inset 0 1px 2px #000; }
   .section { inset: 26px 20px 18px; grid-template-rows: auto 1fr; row-gap: 18px; }
   .section header { padding-right: 52px; }
@@ -394,12 +395,11 @@ html:not(.js) .still-a, html:not(.js) .explore { display: none; }
 .orbit-row button:hover, .orbit-row button:focus-visible { border-color: var(--cyan); box-shadow: 0 0 10px rgba(56, 189, 248, .5); outline: none; }
 @keyframes tray-in { from { opacity: 0; transform: translateY(8px) scale(.97); } to { opacity: 1; transform: none; } }
 /* Phones: the scene zooms out during the JV show so the wide logo fits (app.js sets --jvs only when needed). */
-.js .stage.jv-zoom { transition: opacity .32s ease, transform 1.1s ease-in-out; }
-.js .stage.jv-zoom[data-state="jv"] { transform: translate(-50%, -50%) scale(var(--jvs, 1)); }
-/* Phones: the opening orb is wider than the screen, so the intro plays zoomed out (app.js sets --ifs only when needed):
-   no transition into it (the stage is still hidden), a 1.1 s ease back in to the button when the intro ends. */
-.js .stage.intro-zoom { transition: opacity .32s ease, transform 1.1s ease-in-out; }
-.js .stage.intro-zoom[data-state="intro"] { transform: translate(-50%, -50%) scale(var(--ifs, 1)); transition: none; }  /* phones only: no extra transform on computers, where it could soften the JV video */
+/* Phones: the opening orb is wider than the screen too, so the intro plays zoomed out (app.js sets --ifs only when needed):
+   no transition into it (the stage is still hidden), the same 1.1 s ease back in to the button when the intro ends. */
+.js .stage.jv-zoom, .js .stage.intro-zoom { transition: opacity .32s ease, transform 1.1s ease-in-out; }
+.js .stage.jv-zoom[data-state="jv"] { transform: translate(-50%, -50%) scale(var(--jvs, 1)); }  /* phones only: no extra transform on computers, where it could soften the JV video */
+.js .stage.intro-zoom[data-state="intro"] { transform: translate(-50%, -50%) scale(var(--ifs, 1)); transition: none; }
 /* Orbit shadow: CSS is the only shadow owner (Sol's keyed clips have none). A soft oval below the object. */
 .orbiter .oshadow { position: absolute; left: 50%; top: 100%; width: 38%; aspect-ratio: 5 / 1; pointer-events: none;
   background: radial-gradient(closest-side, rgba(0, 0, 0, .38), rgba(0, 0, 0, .12) 60%, transparent);  /* softer (Javed) */
@@ -413,13 +413,11 @@ input, textarea, [contenteditable] { caret-color: auto; }
 /* ---------- About Me intro (about-intro.js, Javed 2026-11-02). The layer sits on the same box as .glass, above the
    section text (z 3) and under the close button (later in the DOM, also z 4). Plays in a 1.86:1 band: on computers the band
    fills the glass; in the tall phone panel it is centred, like the AT_INTRO strip on black. Built in lab/about-intro.html. */
-.ai-root { position: absolute; left: 5.89%; right: 6.013%; top: 6.094%; bottom: 18.48%; border-radius: 10.704cqw; overflow: hidden; z-index: 4;
-  background: var(--navy); display: grid; align-items: center; }
+.ai-root { overflow: hidden; z-index: 4; background: var(--navy); display: grid; align-items: center; }
 .ai-root[hidden] { display: none; }
 .replay-intro { margin: .6em 0 1em; padding: .7em 1.4em; border-radius: 999px; cursor: pointer;
   font: 600 .72em var(--display); letter-spacing: .14em; text-transform: uppercase; color: var(--cyan);
-  background: rgba(8, 12, 20, .55); border: 1px solid rgba(56, 189, 248, .5); transition: box-shadow .2s, color .2s, border-color .2s; }
-.replay-intro:hover, .replay-intro:focus-visible { outline: none; color: #fff; border-color: var(--cyan); box-shadow: 0 0 1em rgba(56, 189, 248, .6), inset 0 0 .6em rgba(56, 189, 248, .35); }
+  background: rgba(8, 12, 20, .55); border: 1px solid rgba(56, 189, 248, .5); transition: box-shadow .2s, color .2s, border-color .2s; }  /* hover glow: shared with .panel-close */
 .replay-intro[hidden] { display: none; }
 /* While the intro plays, the page's other loops wait (measured: 49 fps with them running, 60 fps without). The hidden
    capsule label never needs its shine while a panel is open. */
@@ -465,6 +463,5 @@ input, textarea, [contenteditable] { caret-color: auto; }
   box-shadow: 0 0 0 1px rgba(8, 12, 20, .8), 0 0 1.4cqw rgba(56, 189, 248, .55), inset 0 .3cqw .6cqw rgba(255, 255, 255, .25); }
 .ai-skip:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
 @media (max-width: 720px), (max-aspect-ratio: 1/1) {
-  .ai-root { inset: 0; border-radius: 21px; }
   .ai-skip { right: 20px; bottom: 20px; }
 }

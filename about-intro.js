@@ -12,11 +12,12 @@ window.AboutIntro = (() => {
     { w: 'Automate it.', s: 'The reports and routine nobody wants to repeat.', plate: ['D'], move: 'pulse' },
     { w: 'Let it run.', s: 'Your daily report, already done.', plate: ['E'], move: 'rise' },
   ];
-  const LEN = 10;
+  // Timeline (s). BEAT is one verb beat: 2 s so the words can be read (Javed, 2026-11-02; was 1.2 s).
+  const BEAT = 2, E = 2.1 + BEAT * BEATS.length, C = E + 2.4, LEN = C + 1.4;  // E end card, C collapse, LEN about 13.9 s
 
   let glass = null, getAudio = () => null, root = null, P = {}, el = {}, ready = null, played = false;
-  let anims = [], raf = 0, t0 = 0, waitTimer = 0, running = false;
-  let actx = null, master = null, a0 = 0;
+  let anims = [], raf = 0, t0 = 0, runId = 0, running = false;
+  let actx = null, master = null, comp = null, a0 = 0, tailTimer = 0;
   const buf = {};
 
   function init(opts) { glass = opts.glass; getAudio = opts.audio; }
@@ -41,7 +42,7 @@ window.AboutIntro = (() => {
       <button class="ai-skip" type="button" aria-label="Skip intro">Skip</button>`;
     glass.after(root);
     const q = (s) => root.querySelector(s);
-    el = { band: q('.ai-band'), cam: q('.ai-cam'), plates: q('.ai-plates'), flash: q('.ai-flash'), burst: q('.ai-burst'),
+    el = { cam: q('.ai-cam'), plates: q('.ai-plates'), flash: q('.ai-flash'), burst: q('.ai-burst'),
            streak: q('.ai-streak'), drop: q('.ai-drop'), spark: q('.ai-spark'), point: q('.ai-point'), skip: q('.ai-skip'),
            turb: q('feTurbulence'), disp: q('feDisplacementMap') };
     Object.entries(PLATES).forEach(([k, name]) => {
@@ -54,7 +55,7 @@ window.AboutIntro = (() => {
       P[k] = el.plates.appendChild(img);
     });
     // Ready = every plate downloaded and decoded, so nothing pops in or stutters on first paint.
-    ready = Promise.all(Object.values(P).map((img) => new Promise((r) => { img.onload = img.onerror = r; }).then(() => img.decode().catch(() => {}))));
+    ready = Promise.all(Object.values(P).map((img) => img.decode().catch(() => {})));  // decode() also waits for the download
     BEATS.forEach((b) => { b.el = block(b.cls, b.w, [['', b.s]]); });
     el.name = block('ai-name', 'JAVED SHAH', [['ai-tag', 'I build AI that keeps working.'], ['ai-role', 'Gen AI system developer and data analyst · Riyadh']]);
     el.skip.addEventListener('click', skip);
@@ -88,10 +89,12 @@ window.AboutIntro = (() => {
     s.connect(g).connect(master); s.start(start, loop ? 0 : off); s.stop(start + len - off + 1.2);
   }
   function audioStart() {
+    clearTimeout(tailTimer); audioStop();  // a replay silences the last run's tail first
     loadSounds();
     if (!actx || getAudio() !== actx || actx.state !== 'running') return;
+    if (!comp) { comp = actx.createDynamicsCompressor(); comp.connect(actx.destination); }  // one compressor, kept for the visit
     master = actx.createGain(); master.gain.value = .7;
-    master.connect(actx.createDynamicsCompressor()).connect(actx.destination);
+    master.connect(comp);
     a0 = actx.currentTime + .03;
   }
   function audioStop() {
@@ -107,7 +110,7 @@ window.AboutIntro = (() => {
     lastWord: (t) => snd(363, t - .62, 2.1),  // AT's "last word lights up" sound: the "Let it run." plate
     rise: (t) => snd(215, t - 1.58, 1.9),     // riser into the logo zoom
     close: (t) => snd(182, t - .1, 1.3),      // the collapse
-    last: (t) => snd(289, t - 1.64, 2.4),     // riser into the final flash
+    last: (t) => snd(289, t - 1.64, 2.9),     // riser into the final flash, played to its natural end
     bed: (t, len) => snd(181, t, len, true),  // quiet background loop
   };
 
@@ -123,7 +126,9 @@ window.AboutIntro = (() => {
   const typeOn = (p, t) => p.querySelectorAll('.ai-c').forEach((s, i) => at(s, [{ opacity: 0 }, { opacity: 1 }], t + i * .012, .05, 'linear'));
   const SMEAR = '-.25em 0 .06em rgba(255,255,255,.55), -.6em 0 .12em rgba(56,189,248,.35), -1.1em 0 .2em rgba(56,189,248,.18)';
   const SHARP = '0 0 0 rgba(255,255,255,0), 0 0 0 rgba(56,189,248,0), 0 0 0 rgba(56,189,248,0)';
-  const SMEAR_OUT = '.25em 0 .06em rgba(255,255,255,.55), .6em 0 .12em rgba(56,189,248,.35), 1.1em 0 .2em rgba(56,189,248,.18)';
+  const SMEAR_OUT = SMEAR.replace(/-/g, '');  // the same smear, trailing to the right
+  const flyOut = (img, s, t) => at(img, [{ opacity: 1, transform: `scale(${s})`, filter: 'brightness(1)' }, { opacity: 0, transform: 'scale(1.6)', filter: 'brightness(2.4)' }], t, .2, 'ease-in');  // a plate flies through the camera
+  const streakAt = (t, d) => at(el.streak, [{ opacity: 1, transform: 'translateX(-100%)' }, { opacity: 1, transform: 'translateX(170%)' }], t, d, 'ease-in-out');
   let seed = 7;
   const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647) * 2 - 1;  // repeatable scatter
 
@@ -131,12 +136,13 @@ window.AboutIntro = (() => {
   // and flies out through the camera on the burst, the word cools to silver, then smears out.
   function beat(b, t) {
     const w = b.el, h = w.querySelector('h3'), p = w.querySelector('p'), echo = w.querySelector('.ai-echo'), cs = h.querySelectorAll('.ai-c');
+    const out = t + BEAT - .2;  // the burst that ends the beat
     flashAt(t); punch(t); show(w, t + .06); S.hit(t);
     if (b.move === 'gather') {
       cs.forEach((s, i) => at(s, [{ opacity: 0, transform: `translate(${rnd() * 3}em, ${rnd() * 1.2}em) rotate(${rnd() * 50}deg) scale(.4)` },
                                   { opacity: 1, transform: 'none' }], t + .08 + i * .022, .34, 'cubic-bezier(.2,.8,.3,1)'));
       at(el.spark, [{ opacity: 0, transform: 'scale(.5)' }, { opacity: 1, transform: 'scale(2.6)', offset: .35 }, { opacity: .6, transform: 'scale(1)' }], t + .3, .5);
-      hide(el.spark, t + 1, .15);
+      hide(el.spark, out, .15);
     } else if (b.move === 'slam') {
       at(h, [{ opacity: 0, transform: 'translateX(5%) scale(1.3)', textShadow: SMEAR }, { opacity: 1, transform: 'none', textShadow: SHARP }], t + .1, .26, 'cubic-bezier(.2,1.35,.4,1)');
     } else if (b.move === 'pulse') {
@@ -147,26 +153,26 @@ window.AboutIntro = (() => {
     } else {
       S.lastWord(t + .2);
       at(h, [{ opacity: 0, filter: 'brightness(4) blur(.12em)' }, { opacity: 1, filter: 'brightness(1) blur(0)' }], t + .1, .5);
-      at(echo, [{ opacity: 0, transform: 'scale(1.08) translateX(0)' }, { opacity: .22, offset: .3 }, { opacity: .12, transform: 'scale(1.1) translateX(3%)' }], t + .25, .8, 'linear');
+      at(echo, [{ opacity: 0, transform: 'scale(1.08) translateX(0)' }, { opacity: .22, offset: .3 }, { opacity: .12, transform: 'scale(1.1) translateX(3%)' }], t + .25, out - t - .25, 'linear');
     }
     typeOn(p, t + .32);
     b.plate.forEach((k, i) => {
       const x = b.plate.length > 1 ? `translateX(${i ? 7 : -7}%) ` : '';
       at(P[k], [{ opacity: 0, transform: `${x}scale(1.35)`, filter: 'brightness(2)' }, { opacity: 1, offset: .12 },
                 { opacity: 1, transform: 'translateX(0) scale(1.06)', filter: 'brightness(1)' }], t + .2, .45, 'cubic-bezier(.15,.85,.3,1)');
-      at(P[k], [{ transform: 'scale(1.06)' }, { transform: 'scale(1.14)' }], t + .65, .35, 'linear');
-      at(P[k], [{ opacity: 1, transform: 'scale(1.14)', filter: 'brightness(1)' }, { opacity: 0, transform: 'scale(1.6)', filter: 'brightness(2.4)' }], t + 1.0, .2, 'ease-in');
+      at(P[k], [{ transform: 'scale(1.06)' }, { transform: 'scale(1.14)' }], t + .65, out - t - .65, 'linear');
+      flyOut(P[k], 1.14, out);
     });
-    at(h, [{ color: '#fff' }, { color: '#9FB3C8' }], t + .45, .55, 'ease-in');
-    burstAt(t + 1.0); pull(t + 1.0);
-    at(h, [{ opacity: 1, transform: 'none', textShadow: SHARP }, { opacity: 0, transform: 'translateX(-9%)', textShadow: SMEAR_OUT }], t + 1.0, .18, 'ease-in');
-    hide(p, t + 1.0); hide(echo, t + 1.0, .1);
+    at(h, [{ color: '#fff' }, { color: '#9FB3C8' }], t + .45, out - t - .45, 'ease-in');
+    burstAt(out); pull(out);
+    at(h, [{ opacity: 1, transform: 'none', textShadow: SHARP }, { opacity: 0, transform: 'translateX(-9%)', textShadow: SMEAR_OUT }], out, .18, 'ease-in');
+    hide(p, out); hide(echo, out, .1);
   }
 
   function build() {
     seed = 7;
     S.bed(0, LEN + .2); S.hit(0); S.reveal(1.0);
-    S.rise(6.9); S.close(8.6); S.last(9.4);
+    S.rise(E); S.close(C); S.last(C + .8);
     // 0.0-2.0 Hook: liquid titanium rushes in, a drop of light, rings, then JV rises out of overexposed white.
     flashAt(0); punch(0);
     at(P.A, [{ opacity: 0, transform: 'scale(1.3)' }, { opacity: 1, transform: 'scale(1.04)' }], 0, .5, 'cubic-bezier(.15,.85,.3,1)');
@@ -180,34 +186,34 @@ window.AboutIntro = (() => {
              { opacity: 1, filter: 'brightness(1)', transform: 'scale(1.05)' }], 1.0, .45, 'cubic-bezier(.15,.85,.3,1)');
     hide(P.A, 1.1, .2);
     at(P.R, [{ transform: 'scale(1.05)' }, { transform: 'scale(1.16)' }], 1.45, .5, 'linear');
-    at(el.streak, [{ opacity: 1, transform: 'translateX(-100%)' }, { opacity: 1, transform: 'translateX(170%)' }], 1.55, .3, 'ease-in-out');
+    streakAt(1.55, .3);
     burstAt(1.9); pull(1.9);
-    at(P.R, [{ opacity: 1, transform: 'scale(1.16)', filter: 'brightness(1)' }, { opacity: 0, transform: 'scale(1.6)', filter: 'brightness(2.4)' }], 1.9, .2, 'ease-in');
+    flyOut(P.R, 1.16, 1.9);
 
-    // 2.1-6.9 The four verb beats.
-    BEATS.forEach((b, i) => beat(b, 2.1 + i * 1.2));
+    // 2.1-E The four verb beats.
+    BEATS.forEach((b, i) => beat(b, 2.1 + i * BEAT));
 
-    // 6.9-8.6 End card: the full JV, the camera rushes into it, and it hands over to the close-up behind the name.
-    const e = 6.9, n = el.name, h = n.querySelector('h3'), [tag, role] = n.querySelectorAll('p'), echo = n.querySelector('.ai-echo');
+    // E to C End card: the full JV, the camera rushes into it, and it hands over to the close-up behind the name.
+    const e = E, n = el.name, h = n.querySelector('h3'), [tag, role] = n.querySelectorAll('p'), echo = n.querySelector('.ai-echo');
     flashAt(e); punch(e); S.hit(e + .6);
     at(P.L, [{ opacity: 0, transform: 'scale(.9)', filter: 'brightness(2)' }, { opacity: 1, transform: 'scale(1)', filter: 'brightness(1)', offset: .3 },
              { opacity: 1, transform: 'scale(2.1)', filter: 'brightness(1.3)' }], e, .5, 'cubic-bezier(.5,0,.85,.4)');
     at(P.F, [{ opacity: 0, filter: 'brightness(1.3)', transform: 'scale(1)' }, { opacity: .75, filter: 'brightness(.6)', transform: 'scale(1.12) translateX(-1%)' }], e + .42, .35);
     hide(P.L, e + .45, .12);
-    at(el.streak, [{ opacity: 1, transform: 'translateX(-100%)' }, { opacity: 1, transform: 'translateX(170%)' }], e + .38, .22, 'ease-in-out');
-    at(P.F, [{ transform: 'scale(1.12) translateX(-1%)' }, { transform: 'scale(1.2) translateX(-3.5%)' }], e + .77, .93, 'linear');
+    streakAt(e + .38, .22);
+    at(P.F, [{ transform: 'scale(1.12) translateX(-1%)' }, { transform: 'scale(1.2) translateX(-3.5%)' }], e + .77, C - e - .77, 'linear');
     show(n, e + .5);
     at(h, [{ opacity: 0, transform: 'translateX(5%) scale(1.25)', textShadow: SMEAR }, { opacity: 1, transform: 'none', textShadow: SHARP }], e + .52, .28, 'cubic-bezier(.2,1.3,.4,1)');
-    at(echo, [{ opacity: 0, transform: 'scale(1.06) translateX(0)' }, { opacity: .2, offset: .25 }, { opacity: .1, transform: 'scale(1.08) translateX(3%)' }], e + .65, 1.05, 'linear');
+    at(echo, [{ opacity: 0, transform: 'scale(1.06) translateX(0)' }, { opacity: .2, offset: .25 }, { opacity: .1, transform: 'scale(1.08) translateX(3%)' }], e + .65, C - e - .65, 'linear');
     typeOn(tag, e + .78); typeOn(role, e + 1.08);
 
-    // 8.6-9.4 Collapse to a bright point. 9.4-10 Final flash, then the layer fades and the real About Me text shows.
-    const c = 8.6;
+    // C to C+0.8 Collapse to a bright point. Then the final flash, then the layer fades and the real About Me text shows.
+    const c = C;
     at(el.cam, [{ transform: 'scale(1.02)', filter: 'brightness(1)' }, { transform: 'scale(.003)', filter: 'brightness(3)' }], c, .45, 'cubic-bezier(.6,0,.9,.6)');
     at(el.point, [{ opacity: 0, transform: 'scale(.4)' }, { opacity: 1, transform: 'scale(1.6)', offset: .3 }, { opacity: 1, transform: 'scale(1)' }], c + .38, .35);
     at(el.point, [{ opacity: 1, transform: 'scale(1)' }, { opacity: 0, transform: 'scale(.2)' }], c + .73, .07, 'ease-in');
-    flashAt(9.4, 1, .32);
-    at(root, [{ opacity: 1 }, { opacity: 0 }], 9.5, .5);
+    flashAt(c + .8, 1, .32);
+    at(root, [{ opacity: 1 }, { opacity: 0 }], c + .9, .5);
   }
 
   // Ripple strength: a slow breathing wave on the plates plus a strong bump when the drop lands. Stops when the intro ends.
@@ -215,7 +221,7 @@ window.AboutIntro = (() => {
     const t = (now - t0) / 1000;
     el.turb.setAttribute('baseFrequency', `${(.004 + .0007 * Math.sin(t * 1.3)).toFixed(5)} ${(.012 + .002 * Math.sin(t * .9)).toFixed(5)}`);
     el.disp.setAttribute('scale', (4 + 22 * Math.exp(-(((t - .85) / .3) ** 2))).toFixed(2));
-    if (t < LEN) raf = requestAnimationFrame(tick); else end();
+    if (t < LEN) raf = requestAnimationFrame(tick); else end(true);
   }
 
   // Called from showPanel. Returns true when the intro will play (first About Me open of the visit).
@@ -229,13 +235,12 @@ window.AboutIntro = (() => {
     root.hidden = false; root.classList.add('ai-warm');  // navy cover; plates painted at near-zero opacity so the GPU has them before frame 1
     addEventListener('keydown', onKey, true);
     // Start after the panel's own 0.5 s zoom-in, once the plates are ready; give up after 2 s rather than keep the visitor waiting.
-    const give = new Promise((r) => { waitTimer = setTimeout(() => r('late'), 2000); });
-    const go = Promise.all([ready, new Promise((r) => setTimeout(r, 560))]).then(() => 'ok');
-    Promise.race([go, give])
-      .then((v) => {
-        clearTimeout(waitTimer);
-        if (!running) return;
-        if (v !== 'ok') { end(); return; }
+    const my = ++runId;  // end() bumps runId, so a wait from a stopped run can never start or end a newer one
+    const go = Promise.all([ready, new Promise((r) => setTimeout(r, 560))]).then(() => true);
+    Promise.race([go, new Promise((r) => setTimeout(r, 2000, false))])
+      .then((ok) => {
+        if (my !== runId) return;
+        if (!ok) { end(); return; }
         root.classList.remove('ai-warm');
         audioStart();
         t0 = performance.now();
@@ -250,20 +255,23 @@ window.AboutIntro = (() => {
     end();
     glass.parentElement.animate([{ filter: 'brightness(2.2)' }, { filter: 'none' }], { duration: 220 });  // a quick flash as it cuts to the text
   }
-  // Finish: stop sound and motion, remove the layer, and hand the panel back.
-  function end() {
-    running = false;
-    cancelAnimationFrame(raf); raf = 0; clearTimeout(waitTimer);
-    audioStop();
+  // Finish: stop motion, remove the layer, and hand the panel back. A natural finish lets the last sound ring out over the
+  // About Me text (Javed, 2026-11-02: it was cut off); skip and close silence everything at once.
+  function end(natural) {
+    running = false; runId++;
+    cancelAnimationFrame(raf); raf = 0;
+    if (natural) tailTimer = setTimeout(audioStop, 3500); else audioStop();  // the tail is over by then; release the sound graph
     anims.forEach((a) => a.cancel()); anims = [];
     removeEventListener('keydown', onKey, true);
     document.documentElement.classList.remove('ai-playing');
-    if (root) { root.hidden = true; root.classList.remove('ai-warm'); }
+    root.hidden = true; root.classList.remove('ai-warm');
     if (onDone) { const d = onDone; onDone = null; d(); }
-    const h = glass && glass.parentElement.querySelector('.section.is-active h2');
-    if (h && root && root.contains(document.activeElement)) h.focus({ preventScroll: true });
+    const h = glass.parentElement.querySelector('.section.is-active h2');
+    if (h && root.contains(document.activeElement)) h.focus({ preventScroll: true });
   }
-  function stop() { if (running) end(); }
+  function stop() {  // closing the panel: stop the intro, or silence a tail that is still ringing
+    if (running) end(); else { clearTimeout(tailTimer); audioStop(); }
+  }
 
   return { init, prime, play, stop, loadSounds };
 })();
