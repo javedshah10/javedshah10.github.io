@@ -372,8 +372,10 @@
   let actx = null, soundOn = false;  // off by default (Javed, 2026-11-02); the visitor's choice is remembered
   const sbuf = {};
   try { soundOn = localStorage.getItem('jp-sound') === 'on'; } catch (e) { /* default off */ }
+  const wanted = new Set();  // lazy sounds asked for while sound was off; loaded when it is switched on
   function loadSound(k) {
-    if (!actx || k in sbuf) return;
+    if (!actx) { wanted.add(k); return; }
+    if (k in sbuf) return;
     sbuf[k] = null;  // mark as loading
     fetch(`media/sfx/${SOUNDS[k][0]}.mp3`)
       .then((r) => r.arrayBuffer()).then((b) => actx.decodeAudioData(b)).then((buf) => { sbuf[k] = buf; })
@@ -384,7 +386,7 @@
     const AC = window.AudioContext || window.webkitAudioContext;
     if (!AC) return;
     actx = new AC();  // starts suspended until the first gesture; decoding still works
-    Object.keys(SOUNDS).filter((k) => !LAZY_SOUNDS.includes(k)).forEach(loadSound);
+    Object.keys(SOUNDS).filter((k) => !LAZY_SOUNDS.includes(k) || wanted.has(k)).forEach(loadSound);
   }
   // One sound at a time (Javed, 2026-11-01): a new sound fades the previous one out in about 0.1 s, so sounds never mix.
   // While the browser keeps audio asleep (before the first click or key), only a sound caused by that gesture plays;
@@ -592,7 +594,8 @@
   }
   function primeClips() {
     prime(fwd, 'A-to-B');
-    fwd.addEventListener('canplaythrough', () => prime(rev, 'B-to-A'), { once: true });
+    // then the JV clips (Javed, 2026-11-02): on the live site 7 MB did not arrive between 10 s and 15 s idle, so the show ran late
+    fwd.addEventListener('canplaythrough', () => { prime(rev, 'B-to-A'); rev.addEventListener('canplaythrough', primeJV, { once: true }); }, { once: true });
   }
 
   route(true);
