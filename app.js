@@ -369,9 +369,9 @@
   };
   const LAZY_SOUNDS = ['jv', 'orbit', 'orbitJV'];
   const soundBtn = $('#sound-toggle');
-  let actx = null, soundOn = true;
+  let actx = null, soundOn = false;  // off by default (Javed, 2026-11-02); the visitor's choice is remembered
   const sbuf = {};
-  try { soundOn = localStorage.getItem('jp-sound') !== 'off'; } catch (e) { /* default on */ }
+  try { soundOn = localStorage.getItem('jp-sound') === 'on'; } catch (e) { /* default off */ }
   function loadSound(k) {
     if (!actx || k in sbuf) return;
     sbuf[k] = null;  // mark as loading
@@ -415,8 +415,10 @@
   ['pointerdown', 'keydown', 'touchstart'].forEach((ev) => document.addEventListener(ev, () => {
     if (actx && actx.state === 'suspended' && soundOn) actx.resume().catch(() => {});
   }, { capture: true }));
-  function paintSound() { soundBtn.setAttribute('aria-pressed', String(soundOn)); soundBtn.title = soundOn ? 'Sound on' : 'Sound off'; }
-  soundBtn.addEventListener('click', () => {
+  function paintSound() { soundBtn.dataset.on = String(soundOn); soundBtn.querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', String((b.dataset.sound === 'on') === soundOn))); }
+  soundBtn.addEventListener('click', (e) => {
+    const b = e.target.closest('button');
+    if (!b || (b.dataset.sound === 'on') === soundOn) return;
     soundOn = !soundOn;
     try { localStorage.setItem('jp-sound', soundOn ? 'on' : 'off'); } catch (e) { /* not remembered */ }
     paintSound();
@@ -547,16 +549,13 @@
     requestAnimationFrame(oFrame);
   }
 
-  // ---------- Intro (orb -> button, Sol's 04 v2 edit, 3.33 s). First visit only, skipped by any click or key,
-  // never with reduced motion / short screens / Save-Data / a section link, and dropped if not playing within 1.5 s.
-  // The button is in the HTML from first paint; the clip ends exactly on the still that replaces it.
-  const INTRO_KEY = 'jp-intro-seen';
+  // ---------- Intro (orb -> button, Sol's 04 v3 edit, 3.33 s). Every page load (Javed, 2026-11-02), skipped by any
+  // click or key, never with reduced motion / short screens / Save-Data / a section link, dropped if not playing in 1.5 s.
+  // The stage stays hidden (html.intro-wait, set in index.html) until the intro's first frame or the fallback.
   const SKIP_EVENTS = ['pointerdown', 'keydown', 'wheel', 'touchstart'];
+  const reveal = () => document.documentElement.classList.remove('intro-wait');
   function runIntro() {
-    let seen = true;
-    try { seen = localStorage.getItem(INTRO_KEY) === '1'; localStorage.setItem(INTRO_KEY, '1'); } catch (e) { /* no storage: skip */ }
-    if (/[?&]intro\b/.test(location.search)) seen = false;  // ?intro replays it on demand (Javed, 2026-11-01)
-    if (seen || !allowVideo() || location.hash) return false;
+    if (!allowVideo() || location.hash) { reveal(); return false; }
     const t = ++token;
     setState('intro');
     let startTimer = 0, endTimer = 0;
@@ -565,6 +564,7 @@
       clearTimeout(startTimer); clearTimeout(endTimer);
       intro.pause(); intro.onended = null;
       stage.dataset.show = '';
+      reveal();
       setState('rest', via);
       SKIP_EVENTS.forEach((ev) => document.removeEventListener(ev, skip, true));
       primeClips();
@@ -580,6 +580,7 @@
       if (t !== token || state !== 'intro') return;
       clearTimeout(startTimer);
       stage.dataset.show = 'intro';
+      reveal();
       endTimer = setTimeout(() => finish('video'), 3333 + 1500);  // ended may never fire
     };
     if (intro.requestVideoFrameCallback) intro.requestVideoFrameCallback(show);

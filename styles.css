@@ -266,16 +266,47 @@ html:not(.js) .still-a, html:not(.js) .explore { display: none; }
 .contact-list li { display: flex; gap: 1.2em; align-items: baseline; padding: .7em 0; border-bottom: 1px solid rgba(56, 189, 248, .15); }
 .contact-list .meta { min-width: 7em; }
 
-/* Sound on/off: small HUD button, top right; remembered per browser (app.js). */
+/* Intro wait: the stage stays hidden until the intro's first frame (app.js); shown after 3 s anyway if app.js never runs. */
+.intro-wait .stage { visibility: hidden; animation: intro-wait-off 0s 3s forwards; }
+@keyframes intro-wait-off { to { visibility: visible; } }
+
+/* Sound effects On / Off: HUD switch, top right; off by default, the choice is remembered per browser (app.js). */
 .sound-toggle {
-  position: fixed; top: 18px; right: 18px; z-index: 10; width: 42px; height: 42px; border-radius: 50%;
-  display: grid; place-items: center; cursor: pointer; color: var(--ice);
-  border: 1px solid rgba(56, 189, 248, .45); background: rgba(8, 12, 20, .6);
-  transition: box-shadow .2s, border-color .2s, color .2s;
+  position: fixed; top: 18px; right: 18px; z-index: 10; display: flex; align-items: center; gap: 10px; padding: 4px 4px 4px 12px;
+  border-radius: 999px; border: 1px solid rgba(56, 189, 248, .4);
+  background: linear-gradient(180deg, rgba(20, 30, 46, .82), rgba(8, 12, 20, .82));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .08), 0 6px 18px rgba(0, 0, 0, .35);
+  backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  font-family: var(--display); font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: #8FB4CC;
 }
-.sound-toggle:hover, .sound-toggle:focus-visible { outline: none; color: #fff; border-color: var(--cyan); box-shadow: 0 0 1em rgba(56, 189, 248, .55); }
-.sound-toggle[aria-pressed="true"] .off, .sound-toggle[aria-pressed="false"] .on { display: none; }
-.sound-toggle[aria-pressed="false"] { color: #7FA6BF; }
+/* status light: glows cyan and breathes while sound is on, dim when off */
+.sound-label { display: flex; align-items: center; gap: 8px; white-space: nowrap; }
+.sound-label::before {
+  content: ''; width: 7px; height: 7px; border-radius: 50%; background: #3A4A5C; box-shadow: inset 0 0 2px rgba(0, 0, 0, .6);
+  transition: background .3s, box-shadow .3s;
+}
+.sound-toggle[data-on="true"] .sound-label::before { background: var(--cyan); box-shadow: 0 0 6px var(--cyan), 0 0 14px rgba(56, 189, 248, .6); animation: sound-led 2.4s ease-in-out infinite; }
+@keyframes sound-led { 50% { box-shadow: 0 0 3px var(--cyan), 0 0 6px rgba(56, 189, 248, .3); } }
+/* On | Off track with a sliding glass thumb */
+.sound-seg { position: relative; display: grid; grid-template-columns: 1fr 1fr; padding: 2px; border-radius: 999px; background: rgba(2, 6, 12, .7); box-shadow: inset 0 1px 3px rgba(0, 0, 0, .6); }
+.sound-seg::before {
+  content: ''; position: absolute; top: 2px; bottom: 2px; left: 2px; width: calc(50% - 2px); border-radius: 999px;
+  background: linear-gradient(180deg, #A9B8C6, #5E6E7E); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .5);
+  transform: translateX(100%); transition: transform .38s var(--ease-out), background .3s, box-shadow .3s;
+}
+.sound-toggle[data-on="true"] .sound-seg::before {
+  transform: none; background: linear-gradient(180deg, #7DD3FC, var(--azure));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .55), 0 0 10px rgba(56, 189, 248, .7);
+}
+.sound-toggle button {
+  position: relative; font: inherit; letter-spacing: inherit; text-transform: inherit; color: #6F8BA0; cursor: pointer;
+  min-width: 40px; padding: 6px 10px; border: 0; border-radius: 999px; background: none; transition: color .3s;
+}
+.sound-toggle button[aria-pressed="true"] { color: #06101C; font-weight: 700; }
+.sound-toggle button[aria-pressed="false"]:hover { color: #fff; }
+.sound-toggle button:focus-visible { outline: 1px solid var(--cyan); outline-offset: 1px; }
+@media (max-width: 520px) { .sound-toggle { top: 12px; right: 12px; gap: 8px; padding-left: 10px; font-size: 9px; } .sound-toggle button { min-width: 34px; padding: 5px 8px; } }
+@media (prefers-reduced-motion: reduce) { .sound-seg::before { transition: none; } .sound-toggle[data-on="true"] .sound-label::before { animation: none; } }
 
 /* Idle nudge (app.js sets data-nudge for 1.9 s): a pure "breath" (transform only) plus a brighter label glow.
    No filter, blur, overlay glow or sweep on the still: those lightened its navy background and showed the

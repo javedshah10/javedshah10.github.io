@@ -6,13 +6,16 @@
 <title>Javed · Profile</title>
 <meta name="description" content="Javed's profile: about me, work experience, selected work and contact.">
 <meta name="theme-color" content="#080C14">
-<script>document.documentElement.classList.add('js')</script>
+<script>
+  // intro-wait hides the stage until the intro's first frame (no capsule flash before it); app.js removes it.
+  (function (h) { h.classList.add('js'); if (!location.hash && !matchMedia('(prefers-reduced-motion: reduce)').matches && !matchMedia('(max-height: 500px)').matches) h.classList.add('intro-wait'); })(document.documentElement);
+</script>
 <!-- Bump ?v= on styles.css and app.js with every change, so browsers never mix a new page with old cached code. -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500&family=Orbitron:wght@500;600;700&display=swap">
 <link rel="preload" as="image" href="media/a-rest.webp">
-<link rel="stylesheet" href="styles.css?v=22">
+<link rel="stylesheet" href="styles.css?v=23">
 </head>
 <body>
 <main class="scene">
@@ -122,13 +125,10 @@
       </article>
     </div>
   </section>
-  <button class="sound-toggle" id="sound-toggle" type="button" aria-pressed="true" aria-label="Sound effects">
-    <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z" fill="currentColor" stroke="none"/>
-      <path class="on" d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/>
-      <path class="off" d="M16 9.5l5 5M21 9.5l-5 5"/>
-    </svg>
-  </button>
+  <div class="sound-toggle" id="sound-toggle" role="group" aria-label="Sound effects">
+    <span class="sound-label" aria-hidden="true">Sound effects</span>
+    <span class="sound-seg"><button type="button" data-sound="on" aria-pressed="false">On</button><button type="button" data-sound="off" aria-pressed="true">Off</button></span>
+  </div>
   <div class="orbit-tray" id="orbit-tray" hidden>
     <button class="orbit-tray-btn" id="orbit-tray-btn" type="button" aria-expanded="false" aria-controls="orbit-panel" aria-label="Orbit settings">
       <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6"><ellipse cx="12" cy="12" rx="10" ry="4.5" transform="rotate(-25 12 12)"/><circle cx="12" cy="12" r="2.6" fill="currentColor" stroke="none"/></svg>
@@ -143,6 +143,6 @@
     </form>
   </div>
 </main>
-<script src="app.js?v=37" defer></script>
+<script src="app.js?v=38" defer></script>
 </body>
 </html>
