@@ -67,6 +67,7 @@
       playClip(fwd, midway ? Math.max(0, DUR - rev.currentTime) : 0, t, toMenu);
     } else { stopVideos(); toMenu(t, 'css'); }
     prime(rev, 'B-to-A');
+    if (allowVideo()) AboutIntro.prime();  // start loading the About Me intro's images while the visitor reads the menu
   }
   function toMenu(t, via) {
     if (t !== token) return;
@@ -248,11 +249,14 @@
     widget.inert = true;
     setState('panel');
     panel.hidden = false;
-    if (!instant) sfx('panelOpen');
-    const go = () => { panel.classList.add('is-in'); section.querySelector('h2').focus({ preventScroll: true }); startFlicker(); };
+    // First About Me open of the visit plays the intro (about-intro.js), which brings its own sounds.
+    const intro = !instant && section.id === 'about-me' && allowVideo() && AboutIntro.play(startFlicker);
+    if (!instant && !intro) sfx('panelOpen');
+    const go = () => { panel.classList.add('is-in'); section.querySelector('h2').focus({ preventScroll: true }); if (!intro) startFlicker(); };
     if (instant || reduced.matches) go(); else requestAnimationFrame(() => requestAnimationFrame(go));
   }
   function hidePanel() {
+    AboutIntro.stop();
     panel.classList.remove('is-in');
     stopFlicker();
     sfx('panelClose');
@@ -370,9 +374,10 @@
   };
   const LAZY_SOUNDS = ['jv', 'orbit', 'orbitJV'];
   const soundBtn = $('#sound-toggle');
-  let actx = null, soundOn = false;  // off by default (Javed, 2026-11-02); the visitor's choice is remembered
+  // Off on every page load (Javed, 2026-11-02): a remembered "On" showed On after a refresh, but the browser keeps
+  // audio blocked until the first click, so the visitor heard nothing. Starting Off keeps the switch honest.
+  let actx = null, soundOn = false;
   const sbuf = {};
-  try { soundOn = localStorage.getItem('jp-sound') === 'on'; } catch (e) { /* default off */ }
   const wanted = new Set();  // lazy sounds asked for while sound was off; loaded when it is switched on
   function loadSound(k) {
     if (!actx) { wanted.add(k); return; }
@@ -418,14 +423,18 @@
   ['pointerdown', 'keydown', 'touchstart'].forEach((ev) => document.addEventListener(ev, () => {
     if (actx && actx.state === 'suspended' && soundOn) actx.resume().catch(() => {});
   }, { capture: true }));
+  AboutIntro.init({ glass: panel.querySelector('.glass'), audio: () => (soundOn && actx) || null });
+  // "Play the intro again" at the end of About Me (Javed, 2026-11-02); hidden where the intro never plays.
+  const replayBtn = $('#replay-intro');
+  replayBtn.hidden = !allowVideo();
+  replayBtn.addEventListener('click', () => { stopFlicker(); if (!AboutIntro.play(startFlicker, true)) startFlicker(); });
   function paintSound() { soundBtn.dataset.on = String(soundOn); soundBtn.querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', String((b.dataset.sound === 'on') === soundOn))); }
   soundBtn.addEventListener('click', (e) => {
     const b = e.target.closest('button');
     if (!b || (b.dataset.sound === 'on') === soundOn) return;
     soundOn = !soundOn;
-    try { localStorage.setItem('jp-sound', soundOn ? 'on' : 'off'); } catch (e) { /* not remembered */ }
     paintSound();
-    if (soundOn) { loadSounds(); if (actx) actx.resume().then(() => sfx('select')).catch(() => {}); }
+    if (soundOn) { loadSounds(); AboutIntro.loadSounds(); if (actx) actx.resume().then(() => sfx('select')).catch(() => {}); }
     else if (actx) { hush(voice); voice = null; }
   });
   paintSound();
@@ -561,6 +570,10 @@
     if (!allowVideo() || location.hash) { reveal(); return false; }
     const t = ++token;
     setState('intro');
+    // Phones (Javed, 2026-11-02): at its widest (2.07 s) the orb is 33.6 % of the stage wide, wider than a phone screen,
+    // so the scene starts zoomed out to keep it inside 96 % of the width and eases in to the button when the intro ends.
+    const fit = Math.min(1, innerWidth * 0.96 / (0.336 * stage.getBoundingClientRect().width));
+    if (fit < 1) { stage.style.setProperty('--ifs', fit.toFixed(3)); stage.classList.add('intro-zoom'); }
     let startTimer = 0, endTimer = 0;
     const finish = (via) => {
       if (t !== token || state !== 'intro') return;
@@ -569,6 +582,7 @@
       stage.dataset.show = '';
       reveal();
       setState('rest', via);
+      setTimeout(() => stage.classList.remove('intro-zoom'), 1200);  // after the zoom back in
       SKIP_EVENTS.forEach((ev) => document.removeEventListener(ev, skip, true));
       primeClips();
     };

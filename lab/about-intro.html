@@ -1,0 +1,325 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>About Intro Lab</title>
+<!-- Test page only (Javed, 2026-11-02): the full 10 s About Me intro from ABOUT-INTRO-STORYBOARD.md (concept C),
+     built here first to judge look, sync and smoothness before it goes into the site's About Me panel.
+     ?noripple turns the breathing ripple off, to compare smoothness. No sound yet. -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700&family=Exo+2:wght@400;500&display=swap">
+<style>
+  :root { --navy: #080C14; --cyan: #38BDF8; --azure: #0284C7; }
+  html, body { margin: 0; height: 100%; background: var(--navy); color: #CFEAF8; font-family: "Exo 2", system-ui, sans-serif; }
+  body { display: grid; place-content: center; gap: 14px; justify-items: center; padding: 16px; box-sizing: border-box; }
+  .glass {
+    position: relative; width: min(92vw, 1200px); aspect-ratio: 1.86 / 1; overflow: hidden; container-type: inline-size;
+    border-radius: 1.4cqw; background: var(--navy); box-shadow: 0 0 0 1px rgba(159, 179, 200, .25), 0 1.6cqw 4cqw rgba(0, 0, 0, .55);
+  }
+  .cam, .plates, .plates img { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .cam { will-change: transform; }
+  .plates img { object-fit: cover; opacity: 0; will-change: transform, opacity; }
+  .breathe .plates { filter: url(#breathe); }
+  .half-l { clip-path: inset(0 49.7% 0 0); }  /* the halves overlap a little, so no seam shows where they meet */
+  .half-r { clip-path: inset(0 0 0 49.7%); }
+
+  .dot { position: absolute; width: 1.1cqw; height: 1.1cqw; margin: -.55cqw; border-radius: 50%; opacity: 0;
+    background: #E8F8FF; box-shadow: 0 0 1cqw .4cqw var(--cyan), 0 0 3cqw 1cqw rgba(56, 189, 248, .5); }
+  .rings { position: absolute; left: 50%; top: 62%; width: 0; height: 0; transform: rotateX(72deg); transform-style: preserve-3d; }
+  .rings i { position: absolute; left: -20cqw; top: -20cqw; width: 40cqw; height: 40cqw; border-radius: 50%; opacity: 0;
+    border: .35cqw solid rgba(56, 189, 248, .9); box-shadow: 0 0 1.2cqw var(--cyan), inset 0 0 1.2cqw var(--cyan); }
+  .streak { position: absolute; left: 0; top: 46%; width: 60%; height: 8%; opacity: 0; mix-blend-mode: screen;
+    background: linear-gradient(90deg, transparent, rgba(56, 189, 248, .35) 35%, #fff 50%, rgba(56, 189, 248, .35) 65%, transparent);
+    filter: blur(.6cqw); }
+  .burst { position: absolute; left: 50%; top: 50%; width: 30cqw; height: 30cqw; margin: -15cqw; border-radius: 50%; opacity: 0; mix-blend-mode: screen;
+    background: radial-gradient(circle, #fff 0%, rgba(207, 234, 248, .8) 18%, rgba(56, 189, 248, .35) 42%, transparent 70%); }
+  .flash { position: absolute; inset: 0; background: #fff; opacity: 0; pointer-events: none; }
+
+  .words { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; gap: 1.2cqw; pointer-events: none; opacity: 0;
+    background: radial-gradient(50% 42% at 50% 50%, rgba(8, 12, 20, .66), transparent); }
+  /* Plate C's stamped JV sits right of centre: those words go left so the stamp stays visible beside them. */
+  .words.left { place-content: center start; text-align: left; padding-left: 7cqw;
+    background: radial-gradient(42% 46% at 26% 50%, rgba(8, 12, 20, .72), transparent); }
+  .words h2 { margin: 0; font-family: Orbitron, sans-serif; font-weight: 700; font-size: 7.6cqw; letter-spacing: .04em; color: #fff; }
+  .words .w, .words .c { display: inline-block; white-space: pre; }  /* .w keeps a word together so lines wrap only between words */
+  .words p { margin: 0; font-size: max(11px, 2.1cqw); font-weight: 500; letter-spacing: .06em; color: var(--cyan); text-shadow: 0 0 .8cqw rgba(8, 12, 20, .9); }
+  .words p .c { opacity: 0; }
+  .words .echo { position: absolute; left: 0; right: 0; top: 50%; translate: 0 -50%; opacity: 0; pointer-events: none; }
+  .words.left .echo { left: 7cqw; }
+  .words.name h2 { font-size: 8.6cqw; letter-spacing: .08em; }
+  .words.name .tag { font-size: max(12px, 2.7cqw); color: #E8F4FC; letter-spacing: .03em; }
+  .words.name .role { font-size: max(9px, 1.5cqw); letter-spacing: .14em; text-transform: uppercase; padding: 0 4cqw; }
+
+  .about { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; opacity: 0; padding: 0 10cqw; }
+  .about h3 { margin: 0 0 1cqw; font: 600 3cqw Orbitron, sans-serif; color: var(--cyan); letter-spacing: .08em; text-transform: uppercase; }
+  .about p { margin: 0; font-size: 1.9cqw; line-height: 1.5; }
+
+  .skip { position: absolute; right: 2cqw; bottom: 2.6cqw; width: max(44px, 6.4cqw); aspect-ratio: 1; border-radius: 50%; cursor: pointer;
+    font: 600 max(9px, .9cqw) Orbitron, sans-serif; letter-spacing: .08em; text-transform: uppercase; color: #E8F8FF;
+    border: max(2px, .28cqw) solid #9FB3C8; background: radial-gradient(circle at 50% 40%, #0EA5E9, var(--azure) 55%, #063651);
+    box-shadow: 0 0 0 1px rgba(8, 12, 20, .8), 0 0 1.4cqw rgba(56, 189, 248, .55), inset 0 .3cqw .6cqw rgba(255, 255, 255, .25); }
+  .skip:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+  .bar { display: flex; gap: 10px; align-items: center; font-size: 13px; }
+  .bar button { font: 600 12px Orbitron, sans-serif; letter-spacing: .08em; color: var(--navy); background: var(--cyan); border: 0; border-radius: 999px; padding: 8px 16px; cursor: pointer; }
+  #stats { margin: 0; font: 12px ui-monospace, monospace; color: #9FB3C8; min-height: 1.3em; }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <filter id="breathe" x="-3%" y="-3%" width="106%" height="106%">
+    <feTurbulence id="turb" type="fractalNoise" baseFrequency="0.004 0.012" numOctaves="2" seed="7"/>
+    <feDisplacementMap id="disp" in="SourceGraphic" scale="4" xChannelSelector="R" yChannelSelector="G"/>
+  </filter>
+</svg>
+
+<div class="glass" id="glass">
+  <div class="cam" id="cam">
+    <div class="plates" id="plates"></div>
+    <div class="rings" aria-hidden="true"><i></i><i></i><i></i></div>
+    <div class="dot" id="drop" style="left:50%; top:62%"></div>
+    <div class="dot" id="spark" style="left:35.5%; top:50%"></div>
+    <div class="streak" id="streak"></div>
+    <div class="burst" id="burst"></div>
+    <div id="beats"></div>
+  </div>
+  <div class="dot" id="point" style="left:50%; top:50%"></div>
+  <div class="flash" id="flash"></div>
+  <div class="about" id="about"><h3>About Me</h3><p>The About Me text appears here, inside the site's panel.</p></div>
+  <button class="skip" id="skip" type="button">Skip</button>
+</div>
+<div class="bar"><button id="replay" type="button">Replay</button><label><input type="checkbox" id="snd" checked> Sound effects</label><span id="mode"></span></div>
+<p id="stats"></p>
+
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const cam = $('cam'), flash = $('flash'), burst = $('burst'), turb = $('turb'), disp = $('disp');
+  const breathe = !location.search.includes('noripple');
+  $('glass').classList.toggle('breathe', breathe);
+  $('mode').textContent = breathe ? 'Breathing ripple: on (add ?noripple to compare)' : 'Breathing ripple: off';
+
+  // Plates: each plate gets its own <img> (two for C, which assembles from halves). The browser picks 1200 or 2400 by screen.
+  const plate = (name, cls = '') => {
+    const img = document.createElement('img');
+    img.alt = ''; img.className = cls; img.sizes = 'min(138vw, 1800px)';  // the glass width x 1.5, because plates zoom up to 160% (quality first, Javed)
+    img.srcset = `../media/about-intro/${name}-1200.webp 1200w, ../media/about-intro/${name}-2400.webp 2400w`;
+    return $('plates').appendChild(img);
+  };
+  const P = { A: plate('plate-A'), R: plate('ripple-hook-still'), B: plate('plate-B'), Cl: plate('plate-C', 'half-l'), Cr: plate('plate-C', 'half-r'),
+              D: plate('plate-D'), E: plate('plate-E'), L: plate('logo-clean'), F: plate('plate-F') };
+
+  // Words: the four verb beats (concept C, humanizer-checked) and the end card.
+  const BEATS = [
+    { w: 'Think it.', s: 'An idea. A question. A messy spreadsheet.', plate: [P.B], move: 'gather' },
+    { w: 'Build it.', s: 'Dashboards, data pipelines, AI agents.', plate: [P.Cl, P.Cr], move: 'slam', cls: 'left' },
+    { w: 'Automate it.', s: 'The reports and routine nobody wants to repeat.', plate: [P.D], move: 'pulse' },
+    { w: 'Let it run.', s: 'Your daily report, already done.', plate: [P.E], move: 'rise' },
+  ];
+  const letters = (text) => text.split(' ').map((w) => `<span class="w">${[...w].map((c) => `<span class="c">${c}</span>`).join('')}</span>`).join(' ');
+  function block(cls, h, lines) {
+    const el = document.createElement('div');
+    el.className = `words ${cls || ''}`;
+    el.innerHTML = `<h2>${letters(h)}</h2>${lines.map(([c, t]) => `<p class="${c}">${letters(t)}</p>`).join('')}<h2 class="echo" aria-hidden="true">${h}</h2>`;
+    return $('beats').appendChild(el);
+  }
+  BEATS.forEach((b) => { b.el = block(b.cls, b.w, [['', b.s]]); });
+  const NAME = block('name', 'JAVED SHAH', [['tag', 'I build AI that keeps working.'], ['role', 'Gen AI system developer and data analyst · Riyadh']]);
+
+  // Sound effects (Javed, 2026-11-02): Javed picked 116, 122, 215, 182, 289 and 181 (a quiet background loop) from the
+  // AT_INTRO sounds Sol extracted; Omar placed them. Each starts early by its measured attack, so its loudest moment lands on the frame.
+  // Gains bring each file's peak to about -6 dB (the loop to about -16 dB). Scheduled on the audio clock from the same start
+  // time as the animations. Browsers only allow sound after a click: the first automatic play is silent, Replay plays with sound.
+  const GAIN = { 116: .5, 122: .35, 215: .68, 182: .67, 289: .88, 181: 1.2, 363: .46 };
+  const actx = new (window.AudioContext || window.webkitAudioContext)(), buf = {};
+  Object.keys(GAIN).forEach((id) => fetch(`../media/about-intro/sfx/${id}.mp3`).then((r) => r.arrayBuffer())
+    .then((b) => actx.decodeAudioData(b)).then((d) => { buf[id] = d; }).catch(() => {}));
+  let master = null, a0 = 0;
+  // Play sound `id` so that its moment lands at intro time t (a negative start plays from inside the file).
+  function snd(id, t, len = 1.2, loop = false) {
+    if (!master || !buf[id]) return;
+    const s = actx.createBufferSource(), g = actx.createGain(), when = a0 + t, off = Math.max(0, actx.currentTime - when);
+    const start = Math.max(when, actx.currentTime);
+    s.buffer = buf[id]; s.loop = loop;
+    g.gain.setValueAtTime(loop ? .0001 : GAIN[id], start);
+    if (loop) g.gain.exponentialRampToValueAtTime(GAIN[id], start + .8);  // the background loop fades in
+    g.gain.setTargetAtTime(0, start + len - off, loop ? .25 : .06);      // and every sound fades out at its end
+    s.connect(g).connect(master); s.start(start, loop ? 0 : off); s.stop(start + len - off + 1.2);
+  }
+  function audioStart() {
+    if (!$('snd').checked) return false;
+    if (actx.state !== 'running') actx.resume();
+    master = actx.createGain(); master.gain.value = .7;
+    const comp = actx.createDynamicsCompressor();  // keeps stacked hits from clipping
+    master.connect(comp).connect(actx.destination);
+    a0 = actx.currentTime + .03;
+    return true;
+  }
+  function audioStop() {
+    if (!master) return;
+    const m = master; master = null;
+    m.gain.setTargetAtTime(0, actx.currentTime, .03);
+    setTimeout(() => m.disconnect(), 300);
+  }
+  // Each sound starts a little before its moment, so the file's loudest part (its measured attack) lands on the frame.
+  const S = {
+    hit: (t) => snd(116, t - .24, 1.05),      // short bright hit (AT's repeating 1.8 s hit): flashes, each new word, the name
+    reveal: (t) => snd(122, t - .76, 1.9),    // the big hit, peaks at t: JV rising out of the ripple
+    lastWord: (t) => snd(363, t - .62, 2.1),  // AT fired it as its last word lit up over cyan (366 f177): our "Let it run." plate
+    rise: (t) => snd(215, t - 1.58, 1.9),     // riser peaking at t (AT paired it with its logo collapse): into the logo zoom
+    close: (t) => snd(182, t - .1, 1.3),      // closing sweep (Javed: "last closing"): the collapse
+    last: (t) => snd(289, t - 1.64, 2.4),     // long riser peaking at t (Javed: "in the last"): the final flash into About Me
+    bed: (t, len) => snd(181, t, len, true),  // quiet background loop under everything
+  };
+
+  // One master timeline: every animation is created at once with its start time, so they share one clock and stay in sync.
+  // Created in time order with fill 'forwards', so a later animation on the same property takes over when it starts.
+  let anims = [], t0 = 0, raf = 0, total = 0;
+  const at = (el, kf, start, dur, easing = 'ease-out') =>
+    anims.push(el.animate(kf, { delay: start * 1000, duration: dur * 1000, fill: 'forwards', easing }));
+  const flashAt = (t, peak = 1, dur = .14) => at(flash, [{ opacity: peak }, { opacity: 0 }], t, dur, 'linear');
+  const punch = (t) => at(cam, [{ transform: 'scale(1)' }, { transform: 'scale(1.08)', offset: .3 }, { transform: 'scale(1.02)' }], t, .35);
+  const pull = (t) => at(cam, [{ transform: 'scale(1.02)' }, { transform: 'scale(.95)', offset: .45 }, { transform: 'scale(1)' }], t, .45, 'ease-in-out');
+  const burstAt = (t) => at(burst, [{ opacity: .95, transform: 'scale(.2)' }, { opacity: 0, transform: 'scale(3)' }], t, .32);
+  const show = (el, t) => at(el, [{ opacity: 1 }, { opacity: 1 }], t, .01);
+  const hide = (el, t, d = .15) => at(el, [{ opacity: 1 }, { opacity: 0 }], t, d);
+  const typeOn = (p, t) => p.querySelectorAll('.c').forEach((s, i) => at(s, [{ opacity: 0 }, { opacity: 1 }], t + i * .012, .05, 'linear'));
+  const SMEAR = '-.25em 0 .06em rgba(255,255,255,.55), -.6em 0 .12em rgba(56,189,248,.35), -1.1em 0 .2em rgba(56,189,248,.18)';
+  const SHARP = '0 0 0 rgba(255,255,255,0), 0 0 0 rgba(56,189,248,0), 0 0 0 rgba(56,189,248,0)';
+  const SMEAR_OUT = '.25em 0 .06em rgba(255,255,255,.55), .6em 0 .12em rgba(56,189,248,.35), 1.1em 0 .2em rgba(56,189,248,.18)';
+  let seed = 7;
+  const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647) * 2 - 1;  // repeatable "random" so every replay is identical
+
+  // Each beat is 1.2 s: flash + punch, the word's own entrance, the small line types on, the plate flashes in behind,
+  // the word cools to silver, then burst + smear out. Only the entrance differs per beat.
+  function beat(b, t) {
+    const el = b.el, h = el.querySelector('h2'), p = el.querySelector('p'), echo = el.querySelector('.echo');
+    flashAt(t); punch(t); show(el, t + .06); S.hit(t);
+    const spans = h.querySelectorAll('.c');
+    if (b.move === 'gather') {  // letters fly in from scattered fragments around the spark
+      spans.forEach((s, i) => at(s, [{ opacity: 0, transform: `translate(${rnd() * 3}em, ${rnd() * 1.2}em) rotate(${rnd() * 50}deg) scale(.4)` },
+                                     { opacity: 1, transform: 'none' }], t + .08 + i * .022, .34, 'cubic-bezier(.2,.8,.3,1)'));
+      at($('spark'), [{ opacity: 0, transform: 'scale(.5)' }, { opacity: 1, transform: 'scale(2.6)', offset: .35 }, { opacity: .6, transform: 'scale(1)' }], t + .3, .5);
+      hide($('spark'), t + 1, .15);
+    } else if (b.move === 'slam') {  // slams in from 130% as a light smear
+      at(h, [{ opacity: 0, transform: 'translateX(5%) scale(1.3)', textShadow: SMEAR }, { opacity: 1, transform: 'none', textShadow: SHARP }], t + .1, .26, 'cubic-bezier(.2,1.35,.4,1)');
+    } else if (b.move === 'pulse') {  // smears in, then a pulse of cyan light runs through the letters like data through a pipeline
+      at(h, [{ opacity: 0, transform: 'translateX(-6%)', textShadow: SMEAR_OUT }, { opacity: 1, transform: 'none', textShadow: SHARP }], t + .1, .22, 'ease-out');
+      spans.forEach((s, i) => at(s, [{ textShadow: '0 0 0 transparent', filter: 'brightness(1)' },
+                                     { textShadow: '0 0 .25em #38BDF8, 0 0 .7em #38BDF8', filter: 'brightness(1.4)', offset: .4 },
+                                     { textShadow: '0 0 0 transparent', filter: 'brightness(1)' }], t + .38 + i * .035, .3, 'linear'));
+    } else {  // 'rise': the calm one, out of overexposed white, with a slow double-exposure echo
+      S.lastWord(t + .2);  // peaks as plate E rushes in behind the word
+      at(h, [{ opacity: 0, filter: 'brightness(4) blur(.12em)' }, { opacity: 1, filter: 'brightness(1) blur(0)' }], t + .1, .5, 'ease-out');
+      at(echo, [{ opacity: 0, transform: 'scale(1.08) translateX(0)' }, { opacity: .22, offset: .3 }, { opacity: .12, transform: 'scale(1.1) translateX(3%)' }], t + .25, .8, 'linear');
+    }
+    typeOn(p, t + .32);
+    // Image zoom (Javed, 2026-11-02: make it visible, like AT): the plate rushes in from 135% and settles,
+    // keeps pushing in, then flies through the camera on the burst (C assembles from two halves while it rushes in).
+    b.plate.forEach((pl, i) => {
+      const x = b.plate.length > 1 ? `translateX(${i ? 7 : -7}%) ` : '';
+      at(pl, [{ opacity: 0, transform: `${x}scale(1.35)`, filter: 'brightness(2)' }, { opacity: 1, offset: .12 },
+              { opacity: 1, transform: 'translateX(0) scale(1.06)', filter: 'brightness(1)' }], t + .2, .45, 'cubic-bezier(.15,.85,.3,1)');
+      at(pl, [{ transform: 'scale(1.06)' }, { transform: 'scale(1.14)' }], t + .65, .35, 'linear');
+      at(pl, [{ opacity: 1, transform: 'scale(1.14)', filter: 'brightness(1)' }, { opacity: 0, transform: 'scale(1.6)', filter: 'brightness(2.4)' }], t + 1.0, .2, 'ease-in');
+    });
+    at(h, [{ color: '#fff' }, { color: '#9FB3C8' }], t + .45, .55, 'ease-in');
+    burstAt(t + 1.0); pull(t + 1.0);
+    at(h, [{ opacity: 1, transform: 'none', textShadow: SHARP }, { opacity: 0, transform: 'translateX(-9%)', textShadow: SMEAR_OUT }], t + 1.0, .18, 'ease-in');
+    hide(p, t + 1.0); hide(echo, t + 1.0, .1);
+  }
+
+  function build() {
+    seed = 7;
+    S.bed(0, 10.2); S.hit(0); S.reveal(1.0);  // loop under everything, opening flash, JV rises
+    S.rise(6.9); S.close(8.6); S.last(9.4);   // into the logo zoom, the collapse, the final flash into About Me
+    // 0.0-2.0 Hook: liquid titanium, a drop of light, rings, the plate ripples hard, then JV rises out of overexposed white.
+    flashAt(0); punch(0);
+    at(P.A, [{ opacity: 0, transform: 'scale(1.3)' }, { opacity: 1, transform: 'scale(1.04)' }], 0, .5, 'cubic-bezier(.15,.85,.3,1)');
+    at(P.A, [{ transform: 'scale(1.04)' }, { transform: 'scale(1.14)' }], .5, .9, 'linear');
+    at($('drop'), [{ opacity: 0, transform: 'translateY(-18cqw) scale(.6)' }, { opacity: 1, offset: .3 }, { opacity: 1, transform: 'translateY(0) scale(1)' }], .4, .25, 'ease-in');
+    at($('drop'), [{ opacity: 1 }, { opacity: 0, transform: 'scale(2.5)' }], .65, .2);
+    document.querySelectorAll('.rings i').forEach((r, i) =>
+      at(r, [{ opacity: .95, transform: 'scale(.04)' }, { opacity: 0, transform: 'scale(1.6)' }], .65 + i * .14, 1.1, 'cubic-bezier(.2,.6,.3,1)'));
+    flashAt(1.0, .55); punch(1.0);
+    at(P.R, [{ opacity: 0, filter: 'brightness(3.2)', transform: 'scale(1.3)' }, { opacity: 1, filter: 'brightness(3.2)', offset: .2 },
+             { opacity: 1, filter: 'brightness(1)', transform: 'scale(1.05)' }], 1.0, .45, 'cubic-bezier(.15,.85,.3,1)');
+    hide(P.A, 1.1, .2);
+    at(P.R, [{ transform: 'scale(1.05)' }, { transform: 'scale(1.16)' }], 1.45, .5, 'linear');
+    at($('streak'), [{ opacity: 1, transform: 'translateX(-100%)' }, { opacity: 1, transform: 'translateX(170%)' }], 1.55, .3, 'ease-in-out');
+    burstAt(1.9); pull(1.9);
+    at(P.R, [{ opacity: 1, transform: 'scale(1.16)', filter: 'brightness(1)' }, { opacity: 0, transform: 'scale(1.6)', filter: 'brightness(2.4)' }], 1.9, .2, 'ease-in');
+
+    // 2.1-6.9 The four verb beats.
+    BEATS.forEach((b, i) => beat(b, 2.1 + i * 1.2));
+
+    // 6.9-8.6 End card. Logo zoom (Javed, 2026-11-02): the full JV appears, the camera rushes into it, and under a streak
+    // it hands over to the extreme close-up (plate F, about 2x bigger), which dims and drifts left behind the name.
+    const e = 6.9, h = NAME.querySelector('h2'), [tag, role] = NAME.querySelectorAll('p'), echo = NAME.querySelector('.echo');
+    flashAt(e); punch(e); S.hit(e + .6);
+    at(P.L, [{ opacity: 0, transform: 'scale(.9)', filter: 'brightness(2)' }, { opacity: 1, transform: 'scale(1)', filter: 'brightness(1)', offset: .3 },
+             { opacity: 1, transform: 'scale(2.1)', filter: 'brightness(1.3)' }], e, .5, 'cubic-bezier(.5,0,.85,.4)');
+    at(P.F, [{ opacity: 0, filter: 'brightness(1.3)', transform: 'scale(1)' }, { opacity: .75, filter: 'brightness(.6)', transform: 'scale(1.12) translateX(-1%)' }], e + .42, .35, 'ease-out');
+    hide(P.L, e + .45, .12);
+    at($('streak'), [{ opacity: 1, transform: 'translateX(-100%)' }, { opacity: 1, transform: 'translateX(170%)' }], e + .38, .22, 'ease-in-out');
+    at(P.F, [{ transform: 'scale(1.12) translateX(-1%)' }, { transform: 'scale(1.2) translateX(-3.5%)' }], e + .77, .93, 'linear');
+    show(NAME, e + .5);
+    at(h, [{ opacity: 0, transform: 'translateX(5%) scale(1.25)', textShadow: SMEAR }, { opacity: 1, transform: 'none', textShadow: SHARP }], e + .52, .28, 'cubic-bezier(.2,1.3,.4,1)');
+    at(echo, [{ opacity: 0, transform: 'scale(1.06) translateX(0)' }, { opacity: .2, offset: .25 }, { opacity: .1, transform: 'scale(1.08) translateX(3%)' }], e + .65, 1.05, 'linear');
+    typeOn(tag, e + .78); typeOn(role, e + 1.08);
+
+    // 8.6-9.4 Collapse: everything shrinks to a bright point, which then fades.
+    const c = 8.6;
+    at(cam, [{ transform: 'scale(1.02)', filter: 'brightness(1)' }, { transform: 'scale(.003)', filter: 'brightness(3)' }], c, .45, 'cubic-bezier(.6,0,.9,.6)');
+    at($('point'), [{ opacity: 0, transform: 'scale(.4)' }, { opacity: 1, transform: 'scale(1.6)', offset: .3 }, { opacity: 1, transform: 'scale(1)' }], c + .38, .35);
+    at($('point'), [{ opacity: 1, transform: 'scale(1)' }, { opacity: 0, transform: 'scale(.2)' }], c + .73, .07, 'ease-in');
+
+    // 9.4-10.0 Final flash, then the site's About Me text resolves.
+    flashAt(9.4, 1, .32);
+    at($('about'), [{ opacity: 0, filter: 'brightness(2.5)' }, { opacity: 1, filter: 'brightness(1)' }], 9.45, .45);
+    return 10;
+  }
+
+  // Ripple strength: a slow breathing wave on the plates, plus a strong bump when the drop lands.
+  // Frame times are recorded as a smoothness check (a stand-in for CPU cost). Nothing runs once the intro ends.
+  let frames = [], last = 0;
+  function tick(now) {
+    const t = (now - t0) / 1000;
+    if (last) frames.push(now - last);
+    last = now;
+    if (breathe) {
+      turb.setAttribute('baseFrequency', `${(.004 + .0007 * Math.sin(t * 1.3)).toFixed(5)} ${(.012 + .002 * Math.sin(t * .9)).toFixed(5)}`);
+      disp.setAttribute('scale', (4 + 22 * Math.exp(-(((t - .85) / .3) ** 2))).toFixed(2));
+    }
+    if (t < total) raf = requestAnimationFrame(tick); else report();
+  }
+  function report() {
+    if (!frames.length) return;
+    const avg = frames.reduce((a, b) => a + b, 0) / frames.length, worst = Math.max(...frames), slow = frames.filter((f) => f > 25).length;
+    $('stats').textContent = `${frames.length} frames · average ${(1000 / avg).toFixed(0)} fps · slowest frame ${worst.toFixed(0)} ms · frames over 25 ms: ${slow}`;
+  }
+  function stop() { cancelAnimationFrame(raf); raf = 0; }
+
+  function play() {
+    stop(); audioStop(); anims.forEach((a) => a.cancel()); anims = []; frames = []; last = 0;
+    $('stats').textContent = 'Playing...';
+    audioStart();
+    t0 = performance.now();
+    total = build();
+    raf = requestAnimationFrame(tick);
+  }
+  function skip() {  // jump straight to the end: About Me text showing
+    if (!raf) return;
+    stop(); audioStop(); anims.forEach((a) => a.finish());
+    flash.animate([{ opacity: .8 }, { opacity: 0 }], { duration: 160 });
+    $('stats').textContent = 'Skipped.';
+  }
+  $('replay').addEventListener('click', play);
+  $('skip').addEventListener('click', skip);
+  addEventListener('keydown', (e) => { if (e.key === 'Escape') skip(); });
+
+  // Start once every plate has loaded, so nothing pops in late.
+  Promise.all(Object.values(P).map((i) => i.complete ? 0 : new Promise((r) => { i.onload = i.onerror = r; }))).then(play);
+})();
+</script>
+</body>
+</html>

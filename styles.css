@@ -394,7 +394,11 @@ html:not(.js) .still-a, html:not(.js) .explore { display: none; }
 @keyframes tray-in { from { opacity: 0; transform: translateY(8px) scale(.97); } to { opacity: 1; transform: none; } }
 /* Phones: the scene zooms out during the JV show so the wide logo fits (app.js sets --jvs only when needed). */
 .js .stage.jv-zoom { transition: opacity .32s ease, transform 1.1s ease-in-out; }
-.js .stage.jv-zoom[data-state="jv"] { transform: translate(-50%, -50%) scale(var(--jvs, 1)); }  /* phones only: no extra transform on computers, where it could soften the JV video */
+.js .stage.jv-zoom[data-state="jv"] { transform: translate(-50%, -50%) scale(var(--jvs, 1)); }
+/* Phones: the opening orb is wider than the screen, so the intro plays zoomed out (app.js sets --ifs only when needed):
+   no transition into it (the stage is still hidden), a 1.1 s ease back in to the button when the intro ends. */
+.js .stage.intro-zoom { transition: opacity .32s ease, transform 1.1s ease-in-out; }
+.js .stage.intro-zoom[data-state="intro"] { transform: translate(-50%, -50%) scale(var(--ifs, 1)); transition: none; }  /* phones only: no extra transform on computers, where it could soften the JV video */
 /* Orbit shadow: CSS is the only shadow owner (Sol's keyed clips have none). A soft oval below the object. */
 .orbiter .oshadow { position: absolute; left: 50%; top: 100%; width: 38%; aspect-ratio: 5 / 1; pointer-events: none;
   background: radial-gradient(closest-side, rgba(0, 0, 0, .38), rgba(0, 0, 0, .12) 60%, transparent);  /* softer (Javed) */
@@ -404,3 +408,62 @@ html:not(.js) .still-a, html:not(.js) .explore { display: none; }
 /* No text cursor on the visual site, even with Chrome caret browsing (F7) on; form fields keep theirs. Text stays selectable. */
 body { caret-color: transparent; }
 input, textarea, [contenteditable] { caret-color: auto; }
+
+/* ---------- About Me intro (about-intro.js, Javed 2026-11-02). The layer sits on the same box as .glass, above the
+   section text (z 3) and under the close button (later in the DOM, also z 4). Plays in a 1.86:1 band: on computers the band
+   fills the glass; in the tall phone panel it is centred, like the AT_INTRO strip on black. Built in lab/about-intro.html. */
+.ai-root { position: absolute; left: 5.89%; right: 6.013%; top: 6.094%; bottom: 18.48%; border-radius: 10.704cqw; overflow: hidden; z-index: 4;
+  background: var(--navy); display: grid; align-items: center; }
+.ai-root[hidden] { display: none; }
+.replay-intro { margin: .6em 0 1em; padding: .7em 1.4em; border-radius: 999px; cursor: pointer;
+  font: 600 .72em var(--display); letter-spacing: .14em; text-transform: uppercase; color: var(--cyan);
+  background: rgba(8, 12, 20, .55); border: 1px solid rgba(56, 189, 248, .5); transition: box-shadow .2s, color .2s, border-color .2s; }
+.replay-intro:hover, .replay-intro:focus-visible { outline: none; color: #fff; border-color: var(--cyan); box-shadow: 0 0 1em rgba(56, 189, 248, .6), inset 0 0 .6em rgba(56, 189, 248, .35); }
+.replay-intro[hidden] { display: none; }
+/* While the intro plays, the page's other loops wait (measured: 49 fps with them running, 60 fps without). The hidden
+   capsule label never needs its shine while a panel is open. */
+.js .stage[data-state="panel"] .explore-label, .ai-playing .sound-label::before { animation-play-state: paused; }
+.ai-defs { position: absolute; }
+.ai-band { position: relative; width: 100%; aspect-ratio: 1.86 / 1; max-height: 100%; overflow: hidden; container-type: inline-size; }
+.ai-cam, .ai-plates, .ai-plates img { position: absolute; inset: 0; width: 100%; height: 100%; }
+.ai-cam { will-change: transform; }
+.ai-plates { filter: url(#ai-breathe); }
+.ai-plates img { object-fit: cover; opacity: 0; will-change: transform, opacity; }
+.ai-warm .ai-plates img { opacity: .003; }  /* painted once before frame 1 so the first zoom does not stutter */
+.ai-half-l { clip-path: inset(0 49.7% 0 0); }  /* the halves overlap a little, so no seam shows where they meet */
+.ai-half-r { clip-path: inset(0 0 0 49.7%); }
+.ai-dot { position: absolute; width: 1.1cqw; height: 1.1cqw; margin: -.55cqw; border-radius: 50%; opacity: 0;
+  background: #E8F8FF; box-shadow: 0 0 1cqw .4cqw var(--cyan), 0 0 3cqw 1cqw rgba(56, 189, 248, .5); }
+.ai-drop { left: 50%; top: 62%; }
+.ai-spark { left: 35.5%; top: 50%; }
+.ai-point { left: 50%; top: 50%; }
+.ai-rings { position: absolute; left: 50%; top: 62%; width: 0; height: 0; transform: rotateX(72deg); transform-style: preserve-3d; }
+.ai-rings i { position: absolute; left: -20cqw; top: -20cqw; width: 40cqw; height: 40cqw; border-radius: 50%; opacity: 0;
+  border: .35cqw solid rgba(56, 189, 248, .9); box-shadow: 0 0 1.2cqw var(--cyan), inset 0 0 1.2cqw var(--cyan); }
+.ai-streak { position: absolute; left: 0; top: 46%; width: 60%; height: 8%; opacity: 0; mix-blend-mode: screen; filter: blur(.6cqw);
+  background: linear-gradient(90deg, transparent, rgba(56, 189, 248, .35) 35%, #fff 50%, rgba(56, 189, 248, .35) 65%, transparent); }
+.ai-burst { position: absolute; left: 50%; top: 50%; width: 30cqw; height: 30cqw; margin: -15cqw; border-radius: 50%; opacity: 0; mix-blend-mode: screen;
+  background: radial-gradient(circle, #fff 0%, rgba(207, 234, 248, .8) 18%, rgba(56, 189, 248, .35) 42%, transparent 70%); }
+.ai-flash { position: absolute; inset: 0; background: #fff; opacity: 0; pointer-events: none; }
+.ai-words { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; gap: 1.2cqw; pointer-events: none; opacity: 0;
+  background: radial-gradient(50% 42% at 50% 50%, rgba(8, 12, 20, .66), transparent); }
+.ai-words.ai-left { place-content: center start; text-align: left; padding-left: 7cqw;  /* plate C's stamped JV stays visible on the right */
+  background: radial-gradient(42% 46% at 26% 50%, rgba(8, 12, 20, .72), transparent); }
+.ai-words h3 { margin: 0; font-family: var(--display); font-weight: 700; font-size: 7.6cqw; letter-spacing: .04em; color: #fff; text-transform: none; }
+.ai-words .ai-w, .ai-words .ai-c { display: inline-block; white-space: pre; }  /* .ai-w keeps a word together so lines wrap only between words */
+.ai-words p { margin: 0; font-size: max(11px, 2.1cqw); font-weight: 500; letter-spacing: .06em; color: var(--cyan); text-shadow: 0 0 .8cqw rgba(8, 12, 20, .9); }
+.ai-words p .ai-c { opacity: 0; }
+.ai-words .ai-echo { position: absolute; left: 0; right: 0; top: 50%; translate: 0 -50%; opacity: 0; }
+.ai-words.ai-left .ai-echo { left: 7cqw; }
+.ai-name h3 { font-size: 8.6cqw; letter-spacing: .08em; }
+.ai-name .ai-tag { font-size: max(12px, 2.7cqw); color: #E8F4FC; letter-spacing: .03em; }
+.ai-name .ai-role { font-size: max(9px, 1.5cqw); letter-spacing: .14em; text-transform: uppercase; padding: 0 4cqw; }
+.ai-skip { position: absolute; right: 8%; bottom: 7%; width: max(44px, 5.6cqw); aspect-ratio: 1; border-radius: 50%; cursor: pointer; z-index: 1;
+  font: 600 max(9px, .8cqw) var(--display); letter-spacing: .08em; text-transform: uppercase; color: #E8F8FF;
+  border: max(2px, .25cqw) solid #9FB3C8; background: radial-gradient(circle at 50% 40%, #0EA5E9, var(--azure) 55%, #063651);
+  box-shadow: 0 0 0 1px rgba(8, 12, 20, .8), 0 0 1.4cqw rgba(56, 189, 248, .55), inset 0 .3cqw .6cqw rgba(255, 255, 255, .25); }
+.ai-skip:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+@media (max-width: 720px), (max-aspect-ratio: 1/1) {
+  .ai-root { inset: 0; border-radius: 21px; }
+  .ai-skip { right: 20px; bottom: 20px; }
+}
