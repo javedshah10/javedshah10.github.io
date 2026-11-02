@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Orbit Lab</title>
+<!-- Test page only (Javed, 2026-11-01): a small object floats around the capsule like a satellite, always in front.
+     It never goes behind the capsule: the capsule is a still with its own opaque navy rectangle, so anything behind it
+     vanishes behind a box (logged in FIX-LOG.md). Not part of the website.
+     Uses Sol's transparent clip lab/orbit-o1.webm when it exists, otherwise a stand-in gyroscope drawn in CSS. -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;600&family=Exo+2:wght@400&display=swap">
+<style>
+  :root { --navy: #080C14; --cyan: #38BDF8; }
+  html, body { margin: 0; height: 100%; background: var(--navy); color: #CFEAF8; font-family: "Exo 2", system-ui, sans-serif; overflow: hidden; }
+  .stage { position: absolute; left: 50%; top: 50%; width: min(177.78vh, 100vw, 1200px); aspect-ratio: 16 / 9; transform: translate(-50%, -50%); }
+  .capsule { position: absolute; left: 35.245%; top: 34.761%; width: 29.507%; height: 37.232%; z-index: 2; }
+  .orbiter { position: absolute; left: 0; top: 0; z-index: 3; will-change: transform, opacity; pointer-events: none; }
+  .orbiter video { display: block; width: 100%; height: 100%; }
+  /* Transformation into JV: loop, O2 forward, clean JV image (hides the seam), O2 reversed share one 16:9 crop. */
+  .orbiter .layer { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .orbiter .o2, .orbiter .o2r, .orbiter .hold { opacity: 0; }
+  .orbiter[data-show] .o1 { opacity: 0; }
+  .orbiter[data-show="o2"] .o2, .orbiter[data-show="hold"] .o2, .orbiter[data-show="o2r"] .o2r { opacity: 1; }
+  .orbiter[data-show="hold"] .hold { animation: land .6s ease-out both; }
+  .orbiter[data-show="o2r"][data-out] .hold { animation: unland .45s ease-in .25s both; }
+  @keyframes land { from { opacity: 0; filter: blur(5px); } to { opacity: 1; filter: blur(0); } }
+  @keyframes unland { from { opacity: 1; filter: blur(0); } to { opacity: 0; filter: blur(5px); } }
+
+  /* Stand-in gyroscope: cyan core inside two titanium rings turning in opposite directions. */
+  .gyro { position: relative; width: 100%; height: 100%; perspective: 400px; }
+  .core { position: absolute; inset: 34%; border-radius: 50%;
+    background: radial-gradient(circle at 40% 35%, #E0F7FF 0 12%, var(--cyan) 38%, #0369A1 72%, #062033 100%);
+    box-shadow: 0 0 1.2em .2em rgba(56, 189, 248, .75), 0 0 3em rgba(2, 132, 199, .45); animation: pulse 3s ease-in-out infinite; }
+  .ring { position: absolute; inset: 6%; border-radius: 50%; border: .28em solid #9AA4B2;
+    border-top-color: #E8EDF3; border-bottom-color: #4B5563; box-shadow: inset 0 0 .5em rgba(56, 189, 248, .35), 0 0 .4em rgba(0, 0, 0, .6); }
+  .r1 { animation: spin1 6s linear infinite; }
+  .r2 { inset: 16%; animation: spin2 6s linear infinite; }
+  @keyframes spin1 { from { transform: rotateX(68deg) rotateZ(0); } to { transform: rotateX(68deg) rotateZ(360deg); } }
+  @keyframes spin2 { from { transform: rotateY(66deg) rotateZ(360deg); } to { transform: rotateY(66deg) rotateZ(0); } }
+  @keyframes pulse { 50% { box-shadow: 0 0 1.6em .35em rgba(56, 189, 248, .95), 0 0 3.6em rgba(2, 132, 199, .55); } }
+
+  .panel { position: fixed; left: 16px; bottom: 16px; z-index: 10; width: min(300px, calc(100vw - 32px)); padding: 12px 14px;
+    background: rgba(8, 12, 20, .82); border: 1px solid rgba(56, 189, 248, .35); border-radius: 10px; font-size: 13px; }
+  .panel h1 { margin: 0 0 8px; font: 600 12px/1.2 Orbitron, sans-serif; letter-spacing: .14em; color: var(--cyan); }
+  .panel label { display: grid; grid-template-columns: 1fr 52px; gap: 2px 8px; align-items: center; margin: 6px 0; }
+  .panel input[type=range] { grid-column: 1 / -1; width: 100%; accent-color: var(--cyan); }
+  .panel output { text-align: right; color: #fff; }
+  .panel .row { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+  .panel button { flex: 1; padding: 6px 8px; background: #0B1626; color: #CFEAF8; border: 1px solid rgba(56, 189, 248, .45); border-radius: 6px; font: inherit; cursor: pointer; }
+  .panel button:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+  .panel .note { margin: 8px 0 0; color: #7DA3BC; font-size: 12px; }
+</style>
+</head>
+<body>
+<div class="stage" id="stage">
+  <img class="capsule" src="../media/a-rest.webp" alt="">
+  <div class="orbiter" id="orbiter" aria-hidden="true">
+    <div class="gyro" id="gyro"><span class="ring r1"></span><span class="ring r2"></span><span class="core"></span></div>
+  </div>
+</div>
+
+<form class="panel" id="panel" onsubmit="return false">
+  <h1>ORBIT LAB</h1>
+  <label>Seconds per orbit <output id="o-period"></output><input id="period" type="range" min="8" max="40" step="1" value="19"></label>
+  <label>Object size (% of width) <output id="o-size"></output><input id="size" type="range" min="3" max="14" step="0.5" value="9"></label>
+  <label>Orbit width (%) <output id="o-rx"></output><input id="rx" type="range" min="18" max="48" step="1" value="28"></label>
+  <label>Orbit height (%) <output id="o-ry"></output><input id="ry" type="range" min="4" max="40" step="1" value="33"></label>
+  <div class="row">
+    <button type="button" id="dir">Direction: reverse</button>
+    <button type="button" id="pause">Pause</button>
+    <button type="button" id="sound">Sound: on</button>
+    <button type="button" id="transform">Transform</button>
+  </div>
+  <p class="note" id="note">Stand-in object. Sol's transparent clip (lab/orbit-o1.webm) replaces it automatically.</p>
+</form>
+
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const stage = $('stage'), orb = $('orbiter');
+  // Defaults keep the whole object clear of the capsule (x 35-65 %, y 35-72 % of the stage) at every point of the path.
+  const set = { period: 20, size: 6.5, rx: 40, ry: 32, dir: -1 };  // dir -1 = counter-clockwise ("reverse")
+  const CX = 50, CY = 34.761 + 37.232 / 2;  // orbit centre = capsule centre, % of the stage
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+  let theta = Math.PI / 2, last = 0, paused = false, W = 0, H = 0, t0 = performance.now(), clip = false, frozen = false;
+  // Loop sound (Sol's orbit-o1.mp3): off until the visitor turns it on; then only every 3rd turn of the rings, so it never nags.
+  let soundOn = true, loops = 0;  // Javed's defaults (2026-11-01); the browser still waits for the first click
+  const loopSound = new Audio('orbit-o1.mp3');
+  loopSound.volume = 0.45;
+  function onLoop() { if (soundOn && loops++ % 3 === 0) { loopSound.currentTime = 0; loopSound.play().catch(() => {}); } }
+
+  function measure() { const r = stage.getBoundingClientRect(); W = r.width; H = r.height; }
+  function place(now) {
+    const depth = Math.sin(theta);  // +1 lower half (a touch larger, nearer), -1 upper half; always in front
+    const bob = Math.sin((now - t0) / 1000 * 2 * Math.PI / 7) * 1.2;  // slow float, % of height
+    const size = set.size / 100 * W;  // the object's own width
+    // Sol's clip is a 16:9 crop (800x450 at 720p) with the gyroscope 48 % of its width, centred; the stand-in is square.
+    const bw = clip ? size / 0.48 : size, bh = clip ? bw * 9 / 16 : size;
+    const x = (CX + set.rx * Math.cos(theta)) / 100 * W - bw / 2;
+    const y = (CY + set.ry * depth + bob) / 100 * H - bh / 2;
+    const scale = 0.9 + 0.1 * (depth + 1) / 2;
+    orb.style.width = bw + 'px'; orb.style.height = bh + 'px';
+    orb.style.fontSize = size / 10 + 'px';  // the stand-in's rings and glow scale with the object
+    orb.style.transform = `translate3d(${x}px, ${y}px, 0) scale(${scale})`;
+  }
+  function frame(now) {
+    const dt = last ? Math.min(now - last, 100) / 1000 : 0;  // clamp: no jump after a background tab
+    last = now;
+    if (!paused && !frozen) theta += set.dir * 2 * Math.PI * dt / set.period;
+    place(now);
+    requestAnimationFrame(frame);
+  }
+
+  // Phones: the stage is small, so the object takes a bigger share and the path is taller to stay clear of the capsule.
+  if (innerWidth < 768) { $('size').value = 13; $('rx').value = 42; $('ry').value = 40; }
+  ['period', 'size', 'rx', 'ry'].forEach((k) => {
+    const input = $(k), out = $('o-' + k);
+    const sync = () => { set[k] = +input.value; out.value = input.value; };
+    input.addEventListener('input', sync); sync();
+  });
+  $('dir').addEventListener('click', (e) => { set.dir *= -1; e.target.textContent = 'Direction: ' + (set.dir < 0 ? 'reverse' : 'forward'); });
+  $('pause').addEventListener('click', (e) => { paused = !paused; e.target.textContent = paused ? 'Play' : 'Pause'; });
+  addEventListener('resize', measure);
+  measure();
+
+  if (reduced.matches) { theta = 0; place(performance.now()); $('note').textContent = 'Reduced motion is on: the object stays still.'; return; }
+
+  // Use Sol's transparent clip when it exists; a HEAD request avoids a broken video element when it does not.
+  // Smooth edges (Javed, 2026-11-01): the clip is shown about 160 px wide on a big screen; shrinking the 800 px file 5x
+  // on the fly makes thin rings jagged. When it is shown at most 480 device pixels wide, use the 480x270 files.
+  // Files: 320x180 (Omar, area-downscaled from Sol's 800), 480x270 and 800x450 (Sol); pick the smallest that is at
+  // least as wide as the clip is shown in device pixels, so the browser hardly shrinks it.
+  const need = set.size / 100 * stage.getBoundingClientRect().width / 0.48 * (devicePixelRatio || 1);
+  const tier = need <= 320 ? '-320' : need <= 480 ? '-mobile' : '';
+  fetch('orbit-o1.webm', { method: 'HEAD' }).then((r) => {
+    if (!r.ok) return;
+    const v = document.createElement('video');
+    Object.assign(v, { muted: true, loop: true, playsInline: true, autoplay: true });
+    // VP9 with alpha first; browsers that cannot play it take the navy MP4 (Safari: no alpha, a navy box on navy).
+    const webm = `orbit-o1${tier}.webm`;
+    v.innerHTML = `<source src="${webm}" type='video/webm; codecs="vp09.00.10.08"'><source src="orbit-o1-navy.mp4" type="video/mp4">`;
+    v.addEventListener('loadeddata', () => {
+      $('gyro').replaceWith(v); clip = true; setupTransform(v);
+      $('note').textContent = "Sol's clip: " + v.currentSrc.split('/').pop();
+      if (v.requestVideoFrameCallback) {  // a jump back in media time = one turn of the rings finished
+        let prev = 0;
+        const tick = (now, meta) => {
+          if (meta.mediaTime < prev && !busy) {  // the loop just wrapped to its first frame, which O2 also starts on
+            onLoop();
+            if (pending || ++wraps % 4 === 0) startTransform(v);  // on request, or by itself every 4th loop (about 22 s)
+          }
+          prev = meta.mediaTime; v.requestVideoFrameCallback(tick);
+        };
+        v.requestVideoFrameCallback(tick);
+      }
+    }, { once: true });
+  }).catch(() => {});
+  // ---- Transformation into JV (Sol's O2, 5.9 s), then the clean JV image, then O2 reversed, then the orbit continues.
+  const mob = tier;
+  const o2Sound = new Audio('orbit-o2.mp3'); o2Sound.volume = 0.6;
+  let v2, v2r, pending = false, busy = false, wraps = 0;
+  function layer(el, cls) { el.classList.add('layer', cls); orb.appendChild(el); return el; }
+  function clipEl(src) { const e = document.createElement('video'); Object.assign(e, { muted: true, playsInline: true, preload: 'auto', src }); return e; }
+  function setupTransform(v1) {
+    v1.classList.add('layer', 'o1');
+    v2 = layer(clipEl(`orbit-o2${mob}.webm`), 'o2');
+    v2r = layer(clipEl(`orbit-o2-reverse${mob}.webm`), 'o2r');
+    const img = new Image(); img.alt = ''; img.src = `orbit-jv-hold-${mob === '-320' ? '320' : mob ? 'mobile' : 'desktop'}.png`; layer(img, 'hold');
+  }
+  function startTransform(v1) {
+    pending = false; busy = true; frozen = true;
+    v1.pause(); v1.currentTime = 0;
+    if (soundOn) { loopSound.pause(); o2Sound.currentTime = 0; o2Sound.play().catch(() => {}); }
+    v2.currentTime = 0;
+    v2.requestVideoFrameCallback(() => { orb.dataset.show = 'o2'; });
+    // The video's final JV has a seam: the clean JV image focuses in over its last 0.6 s.
+    const cover = (now, m) => { if (m.mediaTime >= v2.duration - 0.6) orb.dataset.show = 'hold'; else v2.requestVideoFrameCallback(cover); };
+    v2.requestVideoFrameCallback(cover);
+    v2.onended = () => {
+      orb.dataset.show = 'hold';
+      setTimeout(() => {
+        orb.dataset.out = '';  // the clean image fades out (after 0.25 s) as the reverse starts
+        v2r.currentTime = 0;
+        v2r.requestVideoFrameCallback(() => { orb.dataset.show = 'o2r'; });
+        v2r.onended = () => { delete orb.dataset.show; delete orb.dataset.out; busy = false; frozen = false; v1.play(); };
+        v2r.play().catch(() => v2r.onended());
+      }, 2000);  // JV holds 2 s
+    };
+    v2.play().catch(() => { busy = false; frozen = false; v1.play(); });
+  }
+  $('transform').addEventListener('click', () => { if (clip && !busy) pending = true; });
+  $('sound').addEventListener('click', (e) => {
+    soundOn = !soundOn; loops = 0; e.target.textContent = 'Sound: ' + (soundOn ? 'on' : 'off');
+    if (soundOn) onLoop(); else loopSound.pause();
+  });
+
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

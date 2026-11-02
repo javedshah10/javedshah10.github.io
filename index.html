@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Javed · Profile</title>
+<meta name="description" content="Javed's profile: about me, work experience, selected work and contact.">
+<meta name="theme-color" content="#080C14">
+<script>document.documentElement.classList.add('js')</script>
+<!-- Bump ?v= on styles.css and app.js with every change, so browsers never mix a new page with old cached code. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500&family=Orbitron:wght@500;600;700&display=swap">
+<link rel="preload" as="image" href="media/a-rest.webp">
+<link rel="stylesheet" href="styles.css?v=22">
+</head>
+<body>
+<main class="scene">
+  <h1 class="sr-only">Javed · Profile</h1>
+
+  <div class="stage" id="stage" data-state="rest">
+    <img class="still still-a" src="media/a-rest.webp" alt="" width="759" height="539">
+    <img class="still still-b" src="media/b-menu.webp" alt="" width="608" height="817">
+    <!-- Decorative only; the page works without them. Sources are set by app.js after load. -->
+    <!-- Navy fix: browsers decode video colour slightly differently (Chrome showed 9,13,21 for 8,12,20).
+         app.js measures a decoded frame and sets these offsets so the clip's navy equals the page's. -->
+    <svg class="sr-only" aria-hidden="true" focusable="false"><filter id="navyfix" color-interpolation-filters="sRGB">
+      <feComponentTransfer><feFuncR type="linear" slope="1" intercept="0"/><feFuncG type="linear" slope="1" intercept="0"/><feFuncB type="linear" slope="1" intercept="0"/></feComponentTransfer>
+    </filter></svg>
+    <video class="clip clip-fwd" data-name="fwd" muted playsinline preload="none" aria-hidden="true" tabindex="-1"></video>
+    <video class="clip clip-rev" data-name="rev" muted playsinline preload="none" aria-hidden="true" tabindex="-1"></video>
+    <video class="clip clip-intro" data-name="intro" muted playsinline preload="none" aria-hidden="true" tabindex="-1"></video>
+    <!-- JV show (idle): sources are set by app.js only when the show is about to play -->
+    <video class="clip clip-jvf" data-name="jvf" muted playsinline preload="none" aria-hidden="true" tabindex="-1"></video>
+    <img class="clip still-jv" alt="" width="2560" height="1440">
+    <video class="clip clip-jvr" data-name="jvr" muted playsinline preload="none" aria-hidden="true" tabindex="-1"></video>
+    <p class="jv-caption" aria-hidden="true">JV <span>·</span> Javed Shah</p>
+    <!-- Orbit object: decorative; app.js adds its clips only when it first arrives -->
+    <div class="orbiter" id="orbiter" aria-hidden="true"><span class="oshadow"></span><span class="ohit"></span></div>
+
+    <div class="widget" id="widget">
+      <button class="explore" id="explore" type="button" aria-expanded="false" aria-controls="menu">
+        <span class="explore-label">Explore My Profile</span>
+      </button>
+      <nav class="menu" id="menu" aria-label="Profile sections">
+        <ul>
+          <li><a href="#about-me"><span class="idx">01</span><span class="txt">About Me</span></a></li>
+          <li><a href="#work-experience"><span class="idx">02</span><span class="txt">Work Experience</span></a></li>
+          <li><a href="#selected-work"><span class="idx">03</span><span class="txt">Selected Work</span></a></li>
+          <li><a href="#contact"><span class="idx">04</span><span class="txt">Contact</span></a></li>
+        </ul>
+      </nav>
+    </div>
+  </div>
+
+  <section class="panel" id="panel" aria-label="Profile section" hidden>
+    <div class="panel-frame">
+      <div class="glass" aria-hidden="true"></div>
+      <div class="frame" aria-hidden="true"></div>
+      <span class="notch notch-l" aria-hidden="true"></span>
+      <span class="notch notch-r" aria-hidden="true"></span>
+      <button class="panel-close" id="panel-close" type="button" aria-label="Close section"><span aria-hidden="true">✕</span></button>
+
+      <!-- SAMPLE TEXT (Javed's request, 2026-10-31): sensible dummy content to test layout. Replace with Javed's
+           real content; never present it as fact. -->
+      <article class="section" id="about-me">
+        <header><p class="kicker">01 // Profile</p><h2 tabindex="-1">About Me</h2></header>
+        <div class="body">
+          <p class="placeholder-tag">Sample text</p>
+          <p class="lead">I build digital experiences where clear thinking meets careful craft, turning complex ideas into products people enjoy using.</p>
+          <p>My work sits between design, technology and data. I like starting with the real problem, testing early, and shipping the smallest version that works before polishing the details.</p>
+          <h3>What I focus on</h3>
+          <ul>
+            <li>Product and interface design that stays simple under pressure</li>
+            <li>Data and automation that save people time</li>
+            <li>Clear communication with teams and clients</li>
+          </ul>
+          <h3>How I work</h3>
+          <p>I keep promises small and visible, write things down, and measure results instead of guessing. Every project ends with something people can use and a short note on what we learned.</p>
+          <h3>Outside work</h3>
+          <p>Reading, learning new tools, and time with family and friends.</p>
+        </div>
+      </article>
+
+      <article class="section" id="work-experience">
+        <header><p class="kicker">02 // Career</p><h2 tabindex="-1">Work Experience</h2></header>
+        <div class="body">
+          <p class="placeholder-tag">Sample text</p>
+          <div class="role"><h3>Role Title</h3><p class="meta">Company Name · 20XX – Present</p>
+            <p>Leads a small team delivering digital products from first idea to launch. Sample achievement line goes here.</p></div>
+          <div class="role"><h3>Role Title</h3><p class="meta">Company Name · 20XX – 20XX</p>
+            <p>Designed and delivered internal tools and reports used across several departments.</p></div>
+          <div class="role"><h3>Role Title</h3><p class="meta">Company Name · 20XX – 20XX</p>
+            <p>Started in a hands-on role, building and supporting systems for day-to-day operations.</p></div>
+        </div>
+      </article>
+
+      <article class="section" id="selected-work">
+        <header><p class="kicker">03 // Portfolio</p><h2 tabindex="-1">Selected Work</h2></header>
+        <div class="body">
+          <p class="placeholder-tag">Sample text</p>
+          <div class="cards">
+            <div class="card"><p class="meta">Project One</p><h3>Interactive Profile Site</h3><p>A Flash-inspired site where rendered video and live HTML meet at exact frames.</p></div>
+            <div class="card"><p class="meta">Project Two</p><h3>Data Dashboard</h3><p>Short description of the problem, what was built and the result.</p></div>
+            <div class="card"><p class="meta">Project Three</p><h3>Automation Workflow</h3><p>Short description of the problem, what was built and the result.</p></div>
+            <div class="card"><p class="meta">Project Four</p><h3>Project Name</h3><p>Short description of the problem, what was built and the result.</p></div>
+          </div>
+        </div>
+      </article>
+
+      <article class="section" id="contact">
+        <header><p class="kicker">04 // Connect</p><h2 tabindex="-1">Contact</h2></header>
+        <div class="body">
+          <p class="placeholder-tag">Sample text</p>
+          <p class="lead">Have a project or an idea in mind? I would be glad to hear about it.</p>
+          <ul class="contact-list">
+            <li><span class="meta">Email</span><a href="mailto:name@example.com">name@example.com</a></li>
+            <li><span class="meta">LinkedIn</span><a href="https://www.linkedin.com/" rel="noopener">linkedin.com/in/your-profile</a></li>
+            <li><span class="meta">Location</span><span>City, Country</span></li>
+          </ul>
+        </div>
+      </article>
+    </div>
+  </section>
+  <button class="sound-toggle" id="sound-toggle" type="button" aria-pressed="true" aria-label="Sound effects">
+    <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z" fill="currentColor" stroke="none"/>
+      <path class="on" d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/>
+      <path class="off" d="M16 9.5l5 5M21 9.5l-5 5"/>
+    </svg>
+  </button>
+  <div class="orbit-tray" id="orbit-tray" hidden>
+    <button class="orbit-tray-btn" id="orbit-tray-btn" type="button" aria-expanded="false" aria-controls="orbit-panel" aria-label="Orbit settings">
+      <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6"><ellipse cx="12" cy="12" rx="10" ry="4.5" transform="rotate(-25 12 12)"/><circle cx="12" cy="12" r="2.6" fill="currentColor" stroke="none"/></svg>
+    </button>
+    <form class="orbit-panel" id="orbit-panel" hidden onsubmit="return false">
+      <p class="orbit-title">Orbit</p>
+      <label>Seconds per orbit <output id="orbit-period-v"></output><input id="orbit-period" type="range" min="8" max="40" step="1"></label>
+      <label>Size <output id="orbit-size-v"></output><input id="orbit-size" type="range" min="4" max="14" step="0.5"></label>
+      <label>Width <output id="orbit-rx-v"></output><input id="orbit-rx" type="range" min="18" max="48" step="1"></label>
+      <label>Height <output id="orbit-ry-v"></output><input id="orbit-ry" type="range" min="4" max="40" step="1"></label>
+      <div class="orbit-row"><button type="button" id="orbit-dir"></button><button type="button" id="orbit-on" aria-pressed="true"></button><button type="button" id="orbit-reset">Reset</button></div>
+    </form>
+  </div>
+</main>
+<script src="app.js?v=37" defer></script>
+</body>
+</html>
