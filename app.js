@@ -594,7 +594,7 @@
     SKIP_EVENTS.forEach((ev) => document.addEventListener(ev, skip, true));
     const narrow = innerWidth < 768;
     intro.src = !narrow && intro.canPlayType('video/webm; codecs="vp9"')
-      ? 'media/04-S0-to-A-v3-desktop.webm' : `media/04-S0-to-A-v3-${narrow ? 'mobile' : 'desktop'}.mp4`;  // v3: Grok's background blotches gated to navy (v4 smoothing tried and rejected, see FIX-LOG)
+      ? 'media/04-S0-to-A-v5-desktop.webm' : `media/04-S0-to-A-v5-${narrow ? 'mobile' : 'desktop'}.mp4`;  // v5: open background gated to navy, the orb and its glow kept as in the master (v3 gate made patches, see FIX-LOG)
     intro.preload = 'auto';
     intro.addEventListener('loadeddata', () => calibrate(intro), { once: true });
     const show = () => {
