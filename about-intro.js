@@ -16,6 +16,9 @@ window.AboutIntro = (() => {
   const BEAT = 2, E = 2.1 + BEAT * BEATS.length, C = E + 2.4, LEN = C + 1.4;  // E end card, C collapse, LEN about 13.9 s
 
   let glass = null, getAudio = () => null, root = null, P = {}, el = {}, ready = null, played = false;
+  // Returning visitors go straight to the text (design review 2026-11-05); "Play the intro again" still plays it.
+  const SEEN = 'jp-about-intro-seen';
+  try { played = localStorage.getItem(SEEN) === '1'; } catch (e) { /* storage blocked: play once per page load */ }
   let anims = [], raf = 0, t0 = 0, runId = 0, running = false;
   let actx = null, master = null, comp = null, a0 = 0, tailTimer = 0;
   const buf = {};
@@ -242,6 +245,7 @@ window.AboutIntro = (() => {
         if (my !== runId) return;
         if (!ok) { end(); return; }
         root.classList.remove('ai-warm');
+        try { localStorage.setItem(SEEN, '1'); } catch (e) { /* not remembered */ }
         audioStart();
         t0 = performance.now();
         build();

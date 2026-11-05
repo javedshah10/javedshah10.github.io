@@ -69,15 +69,15 @@ body { font-family: var(--text); overflow: hidden; -webkit-font-smoothing: antia
 .menu li:nth-child(3) { top: 51.2%; }
 .menu li:nth-child(4) { top: 74.5%; }
 .menu a {
-  position: absolute; inset: 9% 5%; border-radius: 999px;
-  display: flex; align-items: center; justify-content: center; gap: .5em;
+  position: absolute; inset: 9% 3%; border-radius: 999px;
+  display: flex; align-items: center; justify-content: center; gap: .45em;
   font-family: var(--display); font-weight: 600; text-transform: uppercase; text-decoration: none;
-  font-size: max(10px, .9cqw); letter-spacing: .08em; white-space: nowrap;
+  font-size: max(12px, .9cqw); letter-spacing: .06em; white-space: nowrap;  /* 12 px minimum (design review 2026-11-05); spacing trimmed so "Work Experience" fits */
   --tc: #CFEAF8; --ts: 0 0 .6em rgba(56, 189, 248, .35);  /* text colour and glow; the bulb loop returns to these */
   color: var(--tc); text-shadow: var(--ts);
   -webkit-tap-highlight-color: transparent; outline: none;
 }
-.menu .idx { font-size: .72em; font-weight: 500; color: var(--cyan); opacity: .75; letter-spacing: .05em; }
+.menu .idx { font-size: 1em; font-weight: 500; color: var(--cyan); opacity: .9; letter-spacing: .05em; }
 .menu a::before {  /* cyan light inside the glass slot */
   content: ""; position: absolute; inset: 0; border-radius: inherit; z-index: -1;
   background: radial-gradient(120% 140% at 50% 50%, rgba(56, 189, 248, .22), rgba(2, 132, 199, .08) 55%, transparent 75%);
@@ -100,6 +100,9 @@ body { font-family: var(--text); overflow: hidden; -webkit-font-smoothing: antia
 .js .stage:not([data-state="rest"]) .explore-label { opacity: 0; }
 .js .menu { visibility: hidden; }
 .js .stage[data-state="menu"] .menu { visibility: visible; }
+/* While the opening clip draws the menu, its slots already take clicks (design review 2026-11-05); labels appear at "menu". */
+.js .stage[data-state="opening"] .menu { visibility: visible; }
+.js .stage[data-state="opening"] .menu a { opacity: 0; }
 .js .stage[data-state="menu"] .menu .idx { animation: boot .46s var(--ease-out) both; animation-delay: var(--boot); }
 /* Bulb chase (Javed, 2026-11-01): after the labels boot, each one flashes like a bulb, About Me down to Contact,
    and the chase repeats every 2.4 s while the menu is open. Reduced motion switches it off with all animations. */
@@ -180,7 +183,7 @@ html:not(.js) .still-a, html:not(.js) .explore { display: none; }
 .section:target, .js .section.is-active { display: grid; }
 .js .section:not(.is-active) { display: none; }
 .section header { display: flex; flex-direction: column; justify-content: center; padding-right: 7cqw; }
-.kicker { margin: 0 0 .35em; font-family: var(--display); font-weight: 500; font-size: max(10px, .95cqw); letter-spacing: .32em; color: #7DD3FC; text-shadow: 0 0 .6em rgba(8, 12, 20, .9); }
+.kicker { margin: 0 0 .35em; font-family: var(--display); font-weight: 500; font-size: max(12px, .95cqw); letter-spacing: .32em; color: #7DD3FC; text-shadow: 0 0 .6em rgba(8, 12, 20, .9); }
 .section h2 {
   margin: 0; font-family: var(--display); font-weight: 700; text-transform: uppercase; outline: none;
   font-size: max(20px, 2.7cqw); letter-spacing: .08em; line-height: 1;
@@ -239,7 +242,7 @@ html:not(.js) .still-a, html:not(.js) .explore { display: none; }
   .glass::after { left: 7%; right: 7%; top: 8px; height: 4px; box-shadow: 0 1px 0 rgba(170, 200, 240, .3), inset 0 1px 2px #000; }
   .section { inset: 26px 20px 18px; grid-template-rows: auto 1fr; row-gap: 18px; }
   .section header { padding-right: 52px; }
-  .kicker { font-size: 10px; }
+  .kicker { font-size: 12px; }
   .section h2 { font-size: 24px; }
   .section .body { font-size: 16px; padding-right: 6px; }
   .panel-close { right: 20px; top: 24px; width: 40px; height: 40px; font-size: 15px; }
@@ -256,7 +259,7 @@ html:not(.js) .still-a, html:not(.js) .explore { display: none; }
 .section .body li { margin: .3em 0; }
 .section .body li::marker { color: var(--cyan); }
 .section .body a { color: var(--cyan); text-underline-offset: .2em; }
-.meta { font-family: var(--display); font-size: .68em !important; letter-spacing: .18em; text-transform: uppercase; color: #7FA6BF; }
+.meta { font-family: var(--display); font-size: max(12px, .72em) !important; letter-spacing: .18em; text-transform: uppercase; color: #7FA6BF; }
 .role { padding: .2em 0 .4em 1.1em; border-left: 1px solid rgba(56, 189, 248, .35); margin-bottom: 1.2em; }
 .role h3 { margin-top: .2em !important; color: #fff !important; }
 .role .meta { margin: 0 0 .5em; }
@@ -282,7 +285,7 @@ html:not(.js) .still-a, html:not(.js) .explore { display: none; }
   background: linear-gradient(180deg, rgba(20, 30, 46, .82), rgba(8, 12, 20, .82));
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, .08), 0 6px 18px rgba(0, 0, 0, .35);
   backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
-  font-family: var(--display); font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: #8FB4CC;
+  font-family: var(--display); font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: #A9C8DC;
 }
 /* status light: glows cyan and breathes while sound is on, dim when off */
 .sound-label { display: flex; align-items: center; gap: 8px; white-space: nowrap; }
@@ -310,7 +313,7 @@ html:not(.js) .still-a, html:not(.js) .explore { display: none; }
 .sound-toggle button[aria-pressed="true"] { color: #06101C; font-weight: 700; }
 .sound-toggle button[aria-pressed="false"]:hover { color: #fff; }
 .sound-toggle button:focus-visible { outline: 1px solid var(--cyan); outline-offset: 1px; }
-@media (max-width: 520px) { .sound-toggle { top: 12px; right: 12px; gap: 8px; padding-left: 10px; font-size: 9px; } .sound-toggle button { min-width: 34px; padding: 5px 8px; } }
+@media (max-width: 520px) { .sound-toggle { top: 12px; right: 12px; gap: 8px; padding-left: 10px; font-size: 11px; } .sound-toggle button { min-width: 34px; padding: 5px 8px; } }
 @media (prefers-reduced-motion: reduce) { .sound-seg::before { transition: none; } .sound-toggle[data-on="true"] .sound-label::before { animation: none; } }
 
 /* Idle nudge (app.js sets data-nudge for 1.9 s): a pure "breath" (transform only) plus a brighter label glow.
@@ -465,3 +468,10 @@ input, textarea, [contenteditable] { caret-color: auto; }
 @media (max-width: 720px), (max-aspect-ratio: 1/1) {
   .ai-skip { right: 20px; bottom: 20px; }
 }
+
+/* Scroll hint (design review 2026-11-05): app.js adds .more while a section's text continues below the fade. */
+.section.more::after { content: "Scroll \25BE"; position: absolute; left: 0; right: 0; bottom: 0; text-align: center; pointer-events: none;
+  font: 600 12px var(--display); letter-spacing: .22em; text-transform: uppercase; color: var(--cyan); text-shadow: 0 0 .8em rgba(8, 12, 20, .95);
+  animation: scroll-hint 1.6s ease-in-out infinite; }
+@keyframes scroll-hint { 50% { transform: translateY(3px); opacity: .6; } }
+@media (prefers-reduced-motion: reduce) { .section.more::after { animation: none; } }

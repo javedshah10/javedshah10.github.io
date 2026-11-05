@@ -252,9 +252,13 @@
     // First About Me open of the visit plays the intro (about-intro.js), which brings its own sounds.
     const intro = !instant && section.id === 'about-me' && allowVideo() && AboutIntro.play(startFlicker);
     if (!instant && !intro) sfx('panelOpen');
-    const go = () => { panel.classList.add('is-in'); section.querySelector('h2').focus({ preventScroll: true }); if (!intro) startFlicker(); };
+    const go = () => { panel.classList.add('is-in'); section.querySelector('h2').focus({ preventScroll: true }); if (!intro) startFlicker(); moreHint(section); setTimeout(() => moreHint(section), 600); };  // again once fonts and the rise settle
     if (instant || reduced.matches) go(); else requestAnimationFrame(() => requestAnimationFrame(go));
   }
+  // Scroll hint (design review 2026-11-05): "Scroll" shows at a section's foot while its text continues below.
+  const moreHint = (s) => { const b = s.querySelector('.body'); s.classList.toggle('more', b.scrollHeight - b.scrollTop - b.clientHeight > 8); };
+  sections.forEach((s) => s.querySelector('.body').addEventListener('scroll', () => moreHint(s), { passive: true }));
+  addEventListener('resize', () => { const s = sections.find((x) => x.classList.contains('is-active')); if (s) moreHint(s); });
   function hidePanel() {
     AboutIntro.stop();
     panel.classList.remove('is-in');
