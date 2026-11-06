@@ -304,11 +304,13 @@
   // Clicking a section link moves focus off the menu for a moment before 'hashchange' opens the panel;
   // `picking` stops that gap from closing the menu (it played the close sound under the panel sound).
   let picking = false;
+  // "Ask my AI" sits outside the menu but opens a section like a menu link, so it must not count as "outside".
+  const askRing = $('#ask-ring'), inside = (el) => widget.contains(el) || askRing.contains(el);
   widget.addEventListener('focusout', () => setTimeout(() => {
-    if (!picking && !widget.contains(document.activeElement) && state !== 'panel') close();
+    if (!picking && !inside(document.activeElement) && state !== 'panel') close();
   }, 0));
   document.addEventListener('pointerdown', (e) => {
-    if ((state === 'menu' || state === 'opening') && !widget.contains(e.target)) close();
+    if ((state === 'menu' || state === 'opening') && !inside(e.target)) close();
   });
   links.forEach((a) => {
     a.addEventListener('click', () => {
