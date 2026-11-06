@@ -63,7 +63,9 @@ body { font-family: var(--text); overflow: hidden; -webkit-font-smoothing: antia
 
 /* Menu slots (clip px): x 541-738; y 179-256, 259-336, 337-415, 416-494. Relative to the widget box. */
 .menu ul { list-style: none; margin: 0; padding: 0; }
-.menu li { position: absolute; left: 21.2%; width: 58.8%; height: 22.8%; }
+.menu li { position: absolute; left: 21.2%; width: 58.8%; height: 22.8%; container-type: inline-size; }
+@property --menu-fs { syntax: '<length>'; inherits: true; initial-value: 12px; }
+.menu ul { --menu-fs: max(12px, .9cqw); }  /* the usual size, computed against the stage before each slot becomes its own container */
 .menu li:nth-child(1) { top: 4.7%; }
 .menu li:nth-child(2) { top: 28.2%; }
 .menu li:nth-child(3) { top: 51.2%; }
@@ -72,7 +74,7 @@ body { font-family: var(--text); overflow: hidden; -webkit-font-smoothing: antia
   position: absolute; inset: 9% 3%; border-radius: 999px;
   display: flex; align-items: center; justify-content: center; gap: .45em;
   font-family: var(--display); font-weight: 600; text-transform: uppercase; text-decoration: none;
-  font-size: max(12px, .9cqw); letter-spacing: .06em; white-space: nowrap;  /* 12 px minimum (design review 2026-11-05); spacing trimmed so "Work Experience" fits */
+  font-size: min(var(--menu-fs), 5.4cqi); letter-spacing: .06em; white-space: nowrap;  /* never wider than the glass button: "02 Work Experience" is 14.4 em, the visible pill about 78% of the slot (Javed, 2026-11-06) */
   --tc: #CFEAF8; --ts: 0 0 .6em rgba(56, 189, 248, .35);  /* text colour and glow; the bulb loop returns to these */
   color: var(--tc); text-shadow: var(--ts);
   -webkit-tap-highlight-color: transparent; outline: none;
@@ -477,7 +479,7 @@ input, textarea, [contenteditable] { caret-color: auto; }
 @media (prefers-reduced-motion: reduce) { .section.more::after { animation: none; } }
 
 /* ---------- Ask my AI (2026-11-06): ring link under the capsule, cards, full-screen demo dialog ---------- */
-.ask-ring { position: absolute; left: 50%; top: 71.5%; transform: translateX(-50%); display: grid; justify-items: center; gap: .45cqw; text-decoration: none; color: #BFE9FD; font: 500 max(11px, .78cqw) var(--display); letter-spacing: .24em; text-transform: uppercase; transition: opacity .35s var(--ease-out); }
+.ask-ring { position: absolute; left: 50%; top: 74.5%; transform: translateX(-50%); display: grid; justify-items: center; gap: .45cqw; text-decoration: none; color: #BFE9FD; font: 500 max(11px, .78cqw) var(--display); letter-spacing: .24em; text-transform: uppercase; transition: opacity .35s var(--ease-out); }
 .ask-ring img { width: max(47px, 4.93cqw);  /* image is cropped tight to the ring (2160 master, 768 px); same on-screen ring size as before */ height: auto; filter: drop-shadow(0 0 .9cqw rgba(56, 189, 248, .45)); transition: transform .4s var(--ease-out), filter .4s; }
 .ask-ring:hover img, .ask-ring:focus-visible img { transform: rotate(18deg) scale(1.06); filter: drop-shadow(0 0 1.3cqw rgba(56, 189, 248, .8)); }
 .ask-ring:hover span, .ask-ring:focus-visible span { color: #fff; text-shadow: 0 0 .6em rgba(56, 189, 248, .9); }
