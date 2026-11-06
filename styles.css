@@ -484,7 +484,8 @@ input, textarea, [contenteditable] { caret-color: auto; }
 .ask-ring:hover img, .ask-ring:focus-visible img { transform: rotate(18deg) scale(1.06); filter: drop-shadow(0 0 1.3cqw rgba(56, 189, 248, .8)); }
 .ask-ring:hover span, .ask-ring:focus-visible span { color: #fff; text-shadow: 0 0 .6em rgba(56, 189, 248, .9); }
 .ask-ring:focus-visible { outline: 2px solid var(--cyan); outline-offset: .4cqw; border-radius: 8px; }
-.js .stage[data-state="intro"] .ask-ring { opacity: 0; pointer-events: none; }
+/* Shown only with the capsule and the open menu; fully gone during the intro, the JV show and every transition, so those scenes look exactly as before (Javed, 2026-11-06). */
+.js .stage:not([data-state="rest"]):not([data-state="menu"]) .ask-ring { opacity: 0; visibility: hidden; pointer-events: none; transition: opacity .2s, visibility 0s .2s; }
 .ask-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1em; margin: .4em 0 1em; }
 .ask-card { display: grid; gap: .45em; text-align: left; padding: 1.1em 1.2em; border-radius: 14px; border: 1px solid rgba(56, 189, 248, .35); background: linear-gradient(160deg, rgba(56, 189, 248, .10), rgba(8, 12, 20, .55)); color: #D6E9F5; font: inherit; cursor: pointer; transition: border-color .25s, box-shadow .25s, transform .25s var(--ease-out); }
 .ask-card strong { font-family: var(--display); font-weight: 600; font-size: 1.02em; letter-spacing: .04em; color: #E6F4FC; }
