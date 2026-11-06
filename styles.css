@@ -478,7 +478,7 @@ input, textarea, [contenteditable] { caret-color: auto; }
 
 /* ---------- Ask my AI (2026-11-06): ring link under the capsule, cards, full-screen demo dialog ---------- */
 .ask-ring { position: absolute; left: 50%; top: 71.5%; transform: translateX(-50%); display: grid; justify-items: center; gap: .45cqw; text-decoration: none; color: #BFE9FD; font: 500 max(11px, .78cqw) var(--display); letter-spacing: .24em; text-transform: uppercase; transition: opacity .35s var(--ease-out); }
-.ask-ring img { width: max(76px, 8cqw); height: auto; filter: drop-shadow(0 0 .9cqw rgba(56, 189, 248, .45)); transition: transform .4s var(--ease-out), filter .4s; }
+.ask-ring img { width: max(47px, 4.93cqw);  /* image is cropped tight to the ring (2160 master, 768 px); same on-screen ring size as before */ height: auto; filter: drop-shadow(0 0 .9cqw rgba(56, 189, 248, .45)); transition: transform .4s var(--ease-out), filter .4s; }
 .ask-ring:hover img, .ask-ring:focus-visible img { transform: rotate(18deg) scale(1.06); filter: drop-shadow(0 0 1.3cqw rgba(56, 189, 248, .8)); }
 .ask-ring:hover span, .ask-ring:focus-visible span { color: #fff; text-shadow: 0 0 .6em rgba(56, 189, 248, .9); }
 .ask-ring:focus-visible { outline: 2px solid var(--cyan); outline-offset: .4cqw; border-radius: 8px; }
