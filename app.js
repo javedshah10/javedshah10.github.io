@@ -318,8 +318,19 @@
     a.addEventListener('pointerenter', (e) => { if (e.pointerType === 'mouse' && state === 'menu') sfx('hover'); });
   });
   closeBtn.addEventListener('click', closePanel);
+
+  // ---------- Ask my AI: the live demos run on Javed's Hostinger backend, inside a full-screen dialog ----------
+  const ASK_BASE = 'https://olive-swan-965506.hostingersite.com/';  // Javed's Hostinger backend (voice-lab via ../javed-app, keys in ../javed-private)
+  const askDialog = $('#ask-dialog'), askFrame = askDialog.querySelector('iframe');
+  $('#ask-note').hidden = !!ASK_BASE;
+  document.querySelectorAll('.ask-card').forEach((c) => {
+    c.disabled = !ASK_BASE;
+    c.addEventListener('click', () => { askFrame.src = ASK_BASE + c.dataset.ask; askDialog.showModal(); });
+  });
+  askDialog.querySelector('.ask-close').addEventListener('click', () => askDialog.close());
+  askDialog.addEventListener('close', () => { askFrame.src = 'about:blank'; });  // stops its microphone and sound
   document.addEventListener('keydown', (e) => {
-    if (e.key !== 'Escape') return;
+    if (e.key !== 'Escape' || askDialog.open) return;  // Escape in the demo closes only the demo
     if (state === 'panel') closePanel();
     else if (state === 'menu' || state === 'opening') {
       close(); quietFocus = true; btn.focus({ preventScroll: true }); quietFocus = false;

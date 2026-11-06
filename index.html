@@ -15,7 +15,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500&family=Orbitron:wght@500;600;700&display=swap">
 <link rel="preload" as="image" href="media/a-rest.webp">
-<link rel="stylesheet" href="styles.css?v=32">
+<link rel="stylesheet" href="styles.css?v=33">
 <link rel="icon" type="image/png" href="favicon.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 </head>
@@ -56,6 +56,7 @@
         </ul>
       </nav>
     </div>
+    <a class="ask-ring" id="ask-ring" href="#ask-ai"><img src="media/ask-ring.webp" alt="" width="480" height="480"><span>Ask my AI</span></a>
   </div>
 
   <section class="panel" id="panel" aria-label="Profile section" hidden>
@@ -130,8 +131,32 @@
           </ul>
         </div>
       </article>
+
+      <article class="section" id="ask-ai">
+        <header><p class="kicker">AI // Live</p><h2 tabindex="-1">Ask my AI</h2></header>
+        <div class="body">
+          <p class="lead">Two live demos, built for this site. The ring shows each real step as it happens.</p>
+          <div class="ask-cards">
+            <button class="ask-card" type="button" data-ask="">
+              <span class="meta">Voice and chat</span>
+              <strong>Talk to my assistant</strong>
+              <span>Ask about my work by voice or text, in English, Urdu, Arabic or French. It answers only from facts I have supplied.</span>
+            </button>
+            <button class="ask-card" type="button" data-ask="data/">
+              <span class="meta">Live data analysis</span>
+              <strong>Ask the demo database</strong>
+              <span>Ask a business question about a synthetic logistics dataset. The AI writes the SQL, runs it read-only and draws the chart.</span>
+            </button>
+          </div>
+          <p class="ask-note" id="ask-note" hidden>The live demos are coming online shortly.</p>
+        </div>
+      </article>
     </div>
   </section>
+  <dialog class="ask-dialog" id="ask-dialog" aria-label="Live AI demo">
+    <button class="ask-close" type="button" aria-label="Close demo"><span aria-hidden="true">✕</span></button>
+    <iframe title="Live AI demo" allow="microphone; autoplay"></iframe>
+  </dialog>
   <div class="sound-toggle" id="sound-toggle" role="group" aria-label="Sound effects">
     <span class="sound-label" aria-hidden="true">Sound effects</span>
     <span class="sound-seg"><button type="button" data-sound="on" aria-pressed="false">On</button><button type="button" data-sound="off" aria-pressed="true">Off</button></span>
@@ -151,6 +176,6 @@
   </div>
 </main>
 <script src="about-intro.js?v=6" defer></script>
-<script src="app.js?v=49" defer></script>
+<script src="app.js?v=51" defer></script>
 </body>
 </html>

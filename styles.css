@@ -475,3 +475,24 @@ input, textarea, [contenteditable] { caret-color: auto; }
   animation: scroll-hint 1.6s ease-in-out infinite; }
 @keyframes scroll-hint { 50% { transform: translateY(3px); opacity: .6; } }
 @media (prefers-reduced-motion: reduce) { .section.more::after { animation: none; } }
+
+/* ---------- Ask my AI (2026-11-06): ring link under the capsule, cards, full-screen demo dialog ---------- */
+.ask-ring { position: absolute; left: 50%; top: 71.5%; transform: translateX(-50%); display: grid; justify-items: center; gap: .45cqw; text-decoration: none; color: #BFE9FD; font: 500 max(11px, .78cqw) var(--display); letter-spacing: .24em; text-transform: uppercase; transition: opacity .35s var(--ease-out); }
+.ask-ring img { width: max(76px, 8cqw); height: auto; filter: drop-shadow(0 0 .9cqw rgba(56, 189, 248, .45)); transition: transform .4s var(--ease-out), filter .4s; }
+.ask-ring:hover img, .ask-ring:focus-visible img { transform: rotate(18deg) scale(1.06); filter: drop-shadow(0 0 1.3cqw rgba(56, 189, 248, .8)); }
+.ask-ring:hover span, .ask-ring:focus-visible span { color: #fff; text-shadow: 0 0 .6em rgba(56, 189, 248, .9); }
+.ask-ring:focus-visible { outline: 2px solid var(--cyan); outline-offset: .4cqw; border-radius: 8px; }
+.js .stage[data-state="intro"] .ask-ring { opacity: 0; pointer-events: none; }
+.ask-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1em; margin: .4em 0 1em; }
+.ask-card { display: grid; gap: .45em; text-align: left; padding: 1.1em 1.2em; border-radius: 14px; border: 1px solid rgba(56, 189, 248, .35); background: linear-gradient(160deg, rgba(56, 189, 248, .10), rgba(8, 12, 20, .55)); color: #D6E9F5; font: inherit; cursor: pointer; transition: border-color .25s, box-shadow .25s, transform .25s var(--ease-out); }
+.ask-card strong { font-family: var(--display); font-weight: 600; font-size: 1.02em; letter-spacing: .04em; color: #E6F4FC; }
+.ask-card:hover:not(:disabled), .ask-card:focus-visible { border-color: var(--cyan); box-shadow: 0 0 1.4em rgba(56, 189, 248, .25); transform: translateY(-2px); }
+.ask-card:focus-visible { outline: 2px solid var(--cyan); outline-offset: 3px; }
+.ask-card:disabled { cursor: default; opacity: .6; }
+.ask-note { color: #7DD3FC; }
+.ask-dialog { width: 100vw; height: 100dvh; max-width: none; max-height: none; margin: 0; padding: 0; border: 0; background: #080C14; }
+.ask-dialog::backdrop { background: rgba(4, 7, 12, .85); }
+.ask-dialog iframe { width: 100%; height: 100%; border: 0; display: block; }
+.ask-close { position: absolute; top: 14px; right: 14px; z-index: 1; width: 44px; height: 44px; border-radius: 50%; border: 1px solid rgba(56, 189, 248, .5); background: rgba(8, 12, 20, .8); color: #E6F4FC; font-size: 18px; cursor: pointer; }
+.ask-close:hover, .ask-close:focus-visible { border-color: var(--cyan); box-shadow: 0 0 1em rgba(56, 189, 248, .5); outline: none; }
+@media (prefers-reduced-motion: reduce) { .ask-ring img, .ask-card { transition: none; } .ask-ring:hover img { transform: none; } }
